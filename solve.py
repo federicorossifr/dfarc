@@ -51,6 +51,7 @@ def main():
     p = pa["p"]
     ny = pa["ny"]
     nx = pa["nx"]
+    pa["nc"] = len(p)
     nc = len(p) # constraints
     if args.minint is None:
         args.minint = 0# if pa["op"] != "/" else -args.maxint
@@ -62,10 +63,12 @@ def main():
     if pa["op"] != "/":
         for c in range(0,nc):
             model.Add( Lx[p[c][0]-1] + Lx[p[c][1]-1] == Ly[b[c]-1])
+        LLq = [0]
     else:
+        Lq = model.NewIntVar(-args.maxint, args.maxint, 'Lq')
         for c in range(0,nc):
-            model.Add( Lx[p[c][0]-1] - Lx[p[c][1]-1] == Ly[b[c]-1])
-
+            model.Add( Lx[p[c][0]-1] - Lx[p[c][1]-1] == Ly[b[c]-1]+Lq)
+        LLq = [Lq]
     # lowest shall be zero
     if args.f0:
         model.Add(Lx[0] == 0)
@@ -89,18 +92,24 @@ def main():
 
     if True:
         # iminimze sum of positive values
+        s = sum(Ly)+sum(Lx)+sum(LLq)
         if args.minint < 0:
-            model.Minimize(sum([x*x for x in Lx])+sum([x*x for x in Ly]))
+            n = len(Ly)+len(Lx)
+            help = model.NewIntVar(args.minint*n,args.maxint*n,"H")
+            model.Add(s <= help)
+            model.Add(-s <= help)
+            model.Minimize(help)
         else:
-            model.Minimize(sum(Ly)+sum(Lx))
+            model.Minimize(s)
         status = solver.Solve(model)
         print('Solve status: %s' % solver.StatusName(status))
         if status == cp_model.OPTIMAL:
             print('Optimal objective value: %i' % solver.ObjectiveValue())
-            s={}
+            s=pa
             s["Lx"] = [solver.Value(x) for x in Lx]
             s["Ly"] = [solver.Value(x) for x in Ly]
-            print(s)
+            print("Lx",s["Lx"])
+            print("Ly",s["Ly"])
             json.dump(s,open(args.output,"w"))
         print('Statistics')
         print('  - conflicts : %i' % solver.NumConflicts())

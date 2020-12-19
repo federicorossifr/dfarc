@@ -1,10 +1,11 @@
 
 %%
-n=4;
+n=8;
 l = positlist(n,0);
-op='+'; % 105c for posit4
-op='*'; % 
 op='/'; % not yet
+op='/'; % 
+op='/'; % 105c for posit4
+op='+'; % 
 if op =='+'
     % all numbers
 l = [-l; 0; l];
@@ -17,7 +18,8 @@ elseif op =='/'
 t = bsxfun(@(x,y) x/y,l,l');
 end
 [x,~,itx] = unique(l);
-[y,~,it] = unique(t); % totals, and the map from every matrix element to eacy y
+assert(all(diff(x)) > 0); % ordered
+[y,~,ity] = unique(t); % totals, andt the map from every matrix element to eacy y
 assert(all(diff(y)) > 0); % ordered
 ny = length(y);
 
@@ -51,7 +53,7 @@ for I=1:length(l)
         k = sub2ind(size(t),I,J); % index in table t of product and of mapping
         q = q + 1;
         if xb(I) == xb(J)
-            if y(it(k)) == x(xb(I))
+            if y(ity(k)) == x(xb(I))
                 % skip null op
                 % 1*1 = 1 shall not be ha
                 % 0+0 = 0 shall not count
@@ -64,7 +66,7 @@ for I=1:length(l)
             %A(q,xb(I)) = 2;
         else
             % La+Lnull=La because they are all positive...
-            if x(xb(I)) == y(it(k)) || x(xb(J)) == y(it(k))
+            if x(xb(I)) == y(ity(k)) || x(xb(J)) == y(ity(k))
                 % skip null op
                 %q = q-1;
                 %continue
@@ -73,14 +75,14 @@ for I=1:length(l)
             %A(q,xb(J)) = 1;
         end
         p(q,:)= [xb(I),xb(J)]; % also for combinations in Lx
-        b(q) = it(k); % in Ly
+        b(q) = ity(k); % in Ly
         % find L(yb(I))+L(yb(J)) == L(it(k))
         if op=='+'
-            assert(x(xb(I))+x(xb(J)) == y(it(k)))
+            assert(x(xb(I))+x(xb(J)) == y(ity(k)))
         elseif op=='*'
-            assert(x(xb(I))*x(xb(J)) == y(it(k)))
+            assert(x(xb(I))*x(xb(J)) == y(ity(k)))
         elseif op=='/'
-            assert(x(xb(I))/x(xb(J)) == y(it(k)))
+            assert(x(xb(I))/x(xb(J)) == y(ity(k)))
         end
         % yb(I) L1 + yb(J) L2 = it(k) Lx 
         %
@@ -114,20 +116,5 @@ fclose(f);
 %%
 problem
 %%
-y
-p
-b
-% 0.5 1 2
-% #2*#2=#1  0.5*0.5=0.25
-% #2*#4=#3    0.5*2 = 1
-% #4*#4=#¥      2*2=4
-%
-% what about identities?
-%
-% we have also 1+1=2
-%
-% problem
-%   L2+L2=L1
-%   L2+L4=L3
-%   L4+L4=L5
-%   
+%TODO
+% verify solution file
