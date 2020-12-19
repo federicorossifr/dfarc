@@ -36,7 +36,7 @@ def main():
     #parser.add_argument('output')
     parser.add_argument('--f0',action="store_true")
     parser.add_argument('--maxint','-M',type=int,default=32768)
-    parser.add_argument('--minint','-m',type=int,default=0)
+    parser.add_argument('--minint','-m',type=int)
     args = parser.parse_args()
 
     model = cp_model.CpModel()
@@ -52,13 +52,19 @@ def main():
     ny = pa["ny"]
     nx = pa["nx"]
     nc = len(p) # constraints
+    if args.minint is None:
+        args.minint = 0# if pa["op"] != "/" else -args.maxint
     Lx = [model.NewIntVar(args.minint, args.maxint, 'Lx%d'%(i+1)) for i in range(0,nx)]
     Ly = [model.NewIntVar(args.minint, args.maxint, 'Ly%d'%(i+1)) for i in range(0,ny)]
     print("nx %d ny %d nc %d" % (nx,ny,nc))
 
     # add every sum, remember indices are 1-based
-    for c in range(0,nc):
-        model.Add( Lx[p[c][0]-1] + Lx[p[c][1]-1] == Ly[b[c]-1])
+    if pa["op"] != "/":
+        for c in range(0,nc):
+            model.Add( Lx[p[c][0]-1] + Lx[p[c][1]-1] == Ly[b[c]-1])
+    else:
+        for c in range(0,nc):
+            model.Add( Lx[p[c][0]-1] - Lx[p[c][1]-1] == Ly[b[c]-1])
 
     # lowest shall be zero
     if args.f0:
@@ -70,15 +76,23 @@ def main():
     # lowest shall be zero
     if args.f0:
         model.Add(Ly[0] == 0)
-    for i in range(1,ny):
-        # others shall be greater than previous
-        model.Add(Ly[i] > Ly[i-1])
+    if pa["op"] != "/":
+        for i in range(1,ny):
+            # others shall be greater than previous
+            model.Add(Ly[i] > Ly[i-1])
+    else:
+        for i in range(1,ny):
+            # others shall be greater than previous
+            model.Add(Ly[i] > Ly[i-1])
 
     solver = cp_model.CpSolver()
 
     if True:
         # iminimze sum of positive values
-        model.Minimize(sum(Ly)+sum(Lx))
+        if args.minint < 0:
+            model.Minimize(sum([x*x for x in Lx])+sum([x*x for x in Ly]))
+        else:
+            model.Minimize(sum(Ly)+sum(Lx))
         status = solver.Solve(model)
         print('Solve status: %s' % solver.StatusName(status))
         if status == cp_model.OPTIMAL:
