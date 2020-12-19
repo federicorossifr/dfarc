@@ -32,6 +32,7 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
 def main():
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('input')
+    parser.add_argument('--output','-o',default="solution.json")
     #parser.add_argument('output')
     #parser.add_argument('-x',action="store_true")
     args = parser.parse_args()
@@ -46,29 +47,53 @@ def main():
     b = pa["b"]
     p = pa["p"]
     ny = pa["ny"]
+    nx = pa["nx"]
     nc = len(p) # constraints
-    L = [0] + [model.NewIntVar(0, 100000, 'L%d'%i) for i in range(1,ny)]
+    Lx = [model.NewIntVar(0, 1000, 'Lx%d'%(i+1)) for i in range(0,nx)]
+    Ly = [model.NewIntVar(0, 1000, 'Ly%d'%(i+1)) for i in range(0,ny)]
     print("A: %d x %d and b: %d x 1 " % (len(A),len(A[0]),len(b)))
 
     # add every sum, remember indices are 1-based
     for c in range(0,nc):
-        e = L[p[c][0]-1] + L[p[c][1]-1] == L[b[c]-1]
-        model.Add( e )
+        model.Add( Lx[p[c][0]-1] + Lx[p[c][1]-1] == Ly[b[c]-1])
 
     # lowest shall be zero
-    #model.Add(L[0] == 0)
+    model.Add(Lx[0] == 0)
+    for i in range(1,nx):
+        # others shall be greater than previous
+        model.Add(Lx[i] > Lx[i-1])
+
+    # lowest shall be zero
+    model.Add(Ly[0] == 0)
     for i in range(1,ny):
         # others shall be greater than previous
-        model.Add(L[i] > L[i-1])
+        model.Add(Ly[i] > Ly[i-1])
 
     solver = cp_model.CpSolver()
 
-    # Force the solver to follow the decision strategy exactly.
-    #solver.parameters.search_branching = cp_model.FIXED_SEARCH
+    if True:
+        # iminimze sum of positive values
+        model.Minimize(sum(Ly)+sum(Lx))
+        status = solver.Solve(model)
+        print('Solve status: %s' % solver.StatusName(status))
+        if status == cp_model.OPTIMAL:
+            print('Optimal objective value: %i' % solver.ObjectiveValue())
+            s={}
+            s["Lx"] = [solver.Value(x) for x in Lx]
+            s["Ly"] = [solver.Value(x) for x in Ly]
+            print(s)
+            json.dump(s,open(args.output,"w"))
+        print('Statistics')
+        print('  - conflicts : %i' % solver.NumConflicts())
+        print('  - branches  : %i' % solver.NumBranches())
+        print('  - wall time : %f s' % solver.WallTime())        
+    else:
+        # Force the solver to follow the decision strategy exactly.
+        #solver.parameters.search_branching = cp_model.FIXED_SEARCH
 
-    # Search and print out all solutions.
-    solution_printer = VarArraySolutionPrinter(L[1:])
-    solver.SearchForAllSolutions(model, solution_printer)
+        # Search and print out all solutions.
+        solution_printer = VarArraySolutionPrinter(Lx+Ly) # skip L0 0
+        solver.SearchForAllSolutions(model, solution_printer)
 
 if __name__ == '__main__':
     main()

@@ -5,6 +5,8 @@ if k ~= 0
             return;
 else
 switch(n)
+    case 2
+        r=[0.5 1 2]';
     case 4
         r = posit4list();
     case 6
@@ -16,5 +18,4 @@ switch(n)
             return;
 end
 
-r = [-r; 0; r];
 end
