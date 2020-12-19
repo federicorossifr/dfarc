@@ -1,6 +1,6 @@
 
 %%
-n=4
+n=8;
 l = positlist(n,0);
 op='+'; % 105c for posit4
 op='*'; % 
@@ -83,10 +83,11 @@ assert(all(sum(A,2) ==2))
 problem = [];
 problem.ny = ny;
 problem.nx = length(l);
-problem.A = A;
-problem.zero = zz; % index of zero
+%problem.A = A; % too big and not needed
+%problem.zero = zz; % index of null
 problem.p = p; % shorter
 problem.b=b;
+problem.name = sprintf('posit%d,0 %s',n,op);
 
 
 f = fopen('problem.json','w');

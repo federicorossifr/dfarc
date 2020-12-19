@@ -34,7 +34,9 @@ def main():
     parser.add_argument('input')
     parser.add_argument('--output','-o',default="solution.json")
     #parser.add_argument('output')
-    #parser.add_argument('-x',action="store_true")
+    parser.add_argument('--f0',action="store_true")
+    parser.add_argument('--maxint','-M',type=int,default=32768)
+    parser.add_argument('--minint','-m',type=int,default=0)
     args = parser.parse_args()
 
     model = cp_model.CpModel()
@@ -43,28 +45,31 @@ def main():
 
 
     pa = json.load(open(args.input,"r"))
-    A = pa["A"]
+    print("problem %s" % pa["name"])
+    #A = pa["A"]
     b = pa["b"]
     p = pa["p"]
     ny = pa["ny"]
     nx = pa["nx"]
     nc = len(p) # constraints
-    Lx = [model.NewIntVar(0, 1000, 'Lx%d'%(i+1)) for i in range(0,nx)]
-    Ly = [model.NewIntVar(0, 1000, 'Ly%d'%(i+1)) for i in range(0,ny)]
-    print("A: %d x %d and b: %d x 1 " % (len(A),len(A[0]),len(b)))
+    Lx = [model.NewIntVar(args.minint, args.maxint, 'Lx%d'%(i+1)) for i in range(0,nx)]
+    Ly = [model.NewIntVar(args.minint, args.maxint, 'Ly%d'%(i+1)) for i in range(0,ny)]
+    print("nx %d ny %d nc %d" % (nx,ny,nc))
 
     # add every sum, remember indices are 1-based
     for c in range(0,nc):
         model.Add( Lx[p[c][0]-1] + Lx[p[c][1]-1] == Ly[b[c]-1])
 
     # lowest shall be zero
-    model.Add(Lx[0] == 0)
+    if args.f0:
+        model.Add(Lx[0] == 0)
     for i in range(1,nx):
         # others shall be greater than previous
         model.Add(Lx[i] > Lx[i-1])
 
     # lowest shall be zero
-    model.Add(Ly[0] == 0)
+    if args.f0:
+        model.Add(Ly[0] == 0)
     for i in range(1,ny):
         # others shall be greater than previous
         model.Add(Ly[i] > Ly[i-1])
