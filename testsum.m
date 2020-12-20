@@ -1,11 +1,12 @@
 
 %%
 n=8;
-l = positlist(n,0);
+pk=1;
+l = positlist(n,pk);
 op='/'; % not yet
 op='/'; % 
 op='/'; % 105c for posit4
-op='+'; % 
+op='/'; % 
 if op =='+'
     % all numbers
 l = [-l; 0; l];
