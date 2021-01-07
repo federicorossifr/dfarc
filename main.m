@@ -128,15 +128,45 @@ problem
 %
 %ILP graph is every pairs ine very row
 nc = length(b);
-A = zeros(nc,nx+ny);
+Ac1 = zeros(nc,nx+ny); 
+Ac2 = Ac1;
+
+% for Ax<=b equality means two equations A_i x<=b_i and -A_i x <= -b_i
+bc1 = zeros(nc,1);
+bc2 = bc1;
+bnx1 = zeros(nx,1);
+bny1 = zeros(ny,1);
+
 for I=1:nc
-    A(I,1:p(I,1)) = 1; % Li = D1 ... Di
-    A(I,1:p(I,2)) = A(I,1:p(I,2))+1; % Lj = D1..Dj (overlap)
-    A(I,nx+(1:b(I))) = -1; % out Lij = Q1..Qij neg 
+    % .... <= 0
+    Ac1(I,1:p(I,1)) = 1; % Li = D1 ... Di
+    Ac1(I,1:p(I,2)) = Ac1(I,1:p(I,2))+1; % Lj = D1..Dj (overlap)
+    Ac1(I,nx+(1:b(I))) = -1; % out Lij = Q1..Qij neg 
+
+    % -(...) <= 0
+    Ac2(I,1:p(I,1)) = -1; % Li = D1 ... Di
+    Ac2(I,1:p(I,2)) = Ac2(I,1:p(I,2))-1; % Lj = D1..Dj (overlap)
+    Ac2(I,nx+(1:b(I))) = 1; % out Lij = Q1..Qij neg 
 end
 
-Q=A'; %dual graph
-Q=A;  %prial
+% enforce: x_i > 0
+% as: -x_i <= -1
+Anx1 = zeros(nx,nx+ny);
+Any1 = zeros(ny,nx+ny);
+for I=1:nx
+    Anx1(I,I) = -1;
+    bnx1(I) = -1;
+end
+for I=1:ny
+    Any1(I,nx+I) = -1;
+    bny1(I) = -1;
+end
+
+Aq = [Ac1;Ac2;Anx1;Any1];
+bq = [bc1;bc2;bnx1;bny1];
+
+Q=Aq'; %dual graph
+Q=Aq;  %primal
 G = zeros(size(Q,2),size(Q,2));
 
 %an edge between vertices si and j exists if A contains a row which is nonzero in coordinates i and 
@@ -153,18 +183,13 @@ for I=1:size(G,1)
 end
 dG= det(G) 
 
-a=max(abs(A(:))); % = 2
+a=max(abs(Q(:))); % = 2
 %The treedepth of a graph denoted td(G) is the smallest height of a rooted forest
 %F such that each edge of G is between vertices which are in a descendant-ancestor relationship
 %in F
 d=1; % fully connected
 
 %%
-spy(A)
+spy(Aq)
 %%
 spy(G)
-
-
-%%
-%TODO
-% verify solution file
