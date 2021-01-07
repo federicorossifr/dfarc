@@ -1,6 +1,6 @@
 function r = positlist(n,k)
 
-if k > 1
+if k > 2
     r=[];
             return;
 else
@@ -17,6 +17,8 @@ switch(n)
     case 8
         if k == 1
             r = posit8_1list();
+        elseif k == 2
+            r = posit8_2list();
         else
             r = posit8list();
         end

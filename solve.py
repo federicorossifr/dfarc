@@ -35,6 +35,7 @@ def main():
     parser.add_argument('--output','-o',default="solution.json")
     #parser.add_argument('output')
     parser.add_argument('--f0',action="store_true")
+    parser.add_argument('--amin',action="store_true")
     parser.add_argument('--maxint','-M',type=int,default=32768)
     parser.add_argument('--minint','-m',type=int)
     args = parser.parse_args()
@@ -96,11 +97,17 @@ def main():
         if args.minint < 0:
             n = len(Ly)+len(Lx)
             help = model.NewIntVar(args.minint*n,args.maxint*n,"H")
-            model.Add(s <= help)
-            model.Add(-s <= help)
-            model.Minimize(help)
+            if args.amin:
+                model.Add(s <= help)
+                model.Add(-s <= help)
+                model.Minimize(help)
+            else:                
+                model.Minimize(Ly[-1]+Lx[-1])
         else:
-            model.Minimize(s)
+            if args.amin:
+                model.Minimize(Ly[-1]+Lx[-1])
+            else:
+                model.Minimize(s)
         status = solver.Solve(model)
         print('Solve status: %s' % solver.StatusName(status))
         if status == cp_model.OPTIMAL:

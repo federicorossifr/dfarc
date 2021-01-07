@@ -1,12 +1,12 @@
 
 %%
-n=8;
-pk=1;
+n=4;
+pk=0;
 l = positlist(n,pk);
 op='/'; % not yet
 op='/'; % 
 op='/'; % 105c for posit4
-op='/'; % 
+op='*'; % 
 if op =='+'
     % all numbers
 l = [-l; 0; l];
@@ -97,10 +97,11 @@ end
 b = b(1:q,:);
 p = p(1:q,:);
 %assert(all(sum(A,2) ==2))
+nx = length(l);
 
 problem = [];
 problem.ny = ny;
-problem.nx = length(l);
+problem.nx = nx;
 problem.op = op;
 %problem.A = A; % too big and not needed
 %problem.zero = zz; % index of null
@@ -108,7 +109,7 @@ problem.p = p; % shorter
 problem.b= b;
 problem.x = x;
 problem.y = y;
-problem.name = sprintf('posit%d,0 %s',n,op);
+problem.name = sprintf('posit%d,%d %s',n,pk,op);
 
 
 f = fopen('problem.json','w');
@@ -116,6 +117,54 @@ fwrite(f,jsonencode(problem));
 fclose(f);
 %%
 problem
+
+%%
+%problem to ILP problem
+%DX1 DY1 is first value (>= 0)
+%DXi DYi is the delta (> 0)
+%LXi = sum of all previous
+%LYi = sum of all prevpios
+%A is c x n matrix built from p(I,1) p(I,2) -> b(I,3)
+%
+%ILP graph is every pairs ine very row
+nc = length(b);
+A = zeros(nc,nx+ny);
+for I=1:nc
+    A(I,1:p(I,1)) = 1; % Li = D1 ... Di
+    A(I,1:p(I,2)) = A(I,1:p(I,2))+1; % Lj = D1..Dj (overlap)
+    A(I,nx+(1:b(I))) = -1; % out Lij = Q1..Qij neg 
+end
+
+Q=A'; %dual graph
+Q=A;  %prial
+G = zeros(size(Q,2),size(Q,2));
+
+%an edge between vertices si and j exists if A contains a row which is nonzero in coordinates i and 
+for I=1:size(G,1)
+    cI = Q(:,I) ~= 0;
+    for J=I+1:size(G,1)
+        cJ = Q(:,J) ~= 0;
+        c = cI & cJ;
+        if any(c) 
+            G(I,J) = 1;
+            G(J,I) = 1;
+        end
+    end
+end
+dG= det(G) 
+
+a=max(abs(A(:))); % = 2
+%The treedepth of a graph denoted td(G) is the smallest height of a rooted forest
+%F such that each edge of G is between vertices which are in a descendant-ancestor relationship
+%in F
+d=1; % fully connected
+
+%%
+spy(A)
+%%
+spy(G)
+
+
 %%
 %TODO
 % verify solution file
