@@ -10,10 +10,15 @@ if exist(fp,'file')
     delete(fp,'file');
 end
 tic
-if ispc
-system(sprintf('python solve.py "%s" -o "%s"',fpp,fp));
+if problem.nonmono
+    nonmono = '--nonmono'
 else
-system(sprintf('env -i bash -l -c ''python3 solve.py "%s" --nonmono --f0 -o "%s"''',fpp,fp));
+    nonmono='';
+end
+if ispc
+system(sprintf('python solve.py "%s" %s -o "%s"',fpp,nonmono,fp));
+else
+system(sprintf('env -i bash -l -c ''python3 solve.py "%s" %s --f0 -o "%s"''',fpp,nonmono,fp));
 end
 e = toc;
 if exist(fp,'file')     

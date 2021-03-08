@@ -19,9 +19,18 @@ switch(n)
             r = posit8_1list();
         elseif k == 2
             r = posit8_2list();
-        else
+        elseif k == 0
             r = posit8list();
+        else
+            error('this posit is not suported');
         end        
+    case 9
+        if k == 2
+            r = posit9_2list();
+        else
+            error('this posit is not suported');
+
+        end
     otherwise
         error('this posit is not suported');
             r = [];

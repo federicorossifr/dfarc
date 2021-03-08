@@ -115,6 +115,7 @@ problem.samex = nx1 == nx2 && all(l1 == l2);
 problem.x1 = x1;
 problem.x2 = x2;
 problem.y = y;
+problem.nonmono = true; %modify before call solvee
 problem.hasidentity = hasidentity;
 problem.name = name;
 problem.type = 'omgproblem';
