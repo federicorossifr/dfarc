@@ -7,8 +7,8 @@ commutative=false;
 op='/'; % not yet
 op='/'; % 
 op='/'; % 105c for posit4
+op='/';
 op='^'; % 
-op='+';
 name = sprintf('posit%d,%d %s',n,pk,op);
 if op =='+'
     % all numbers

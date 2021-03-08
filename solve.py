@@ -68,7 +68,7 @@ def main():
     print("nx1 %d nx2 %d ny %d nc %d samex? %s " % (nx1,nx2,ny,nc,samex))
 
     # add every sum, remember indices are 1-based
-    if commutative: 
+    if pa["op"] != "/": 
         for c in range(0,nc):
             model.Add( Lx1[p[c][0]-1] + Lx2[p[c][1]-1] == Ly[b[c]-1])
         LLq = [0]
@@ -142,8 +142,8 @@ def main():
             if not samex:
                 s["Lx2"] = [solver.Value(x) for x in Lx2]
             s["Ly"] = [solver.Value(x) for x in Ly]
-            print("Lx1",s["Lx1"])
             if not samex:
+                print("Lx1",s["Lx1"])
                 print("Lx2",s["Lx2"])
             else:
                 print("Lx",s["Lx1"])                
@@ -158,7 +158,7 @@ def main():
         #solver.parameters.search_branching = cp_model.FIXED_SEARCH
 
         # Search and print out all solutions.
-        solution_printer = VarArraySolutionPrinter(Lx+Ly) # skip L0 0
+        solution_printer = VarArraySolutionPrinter(Lx1+Lx2+Ly) # skip L0 0
         solver.SearchForAllSolutions(model, solution_printer)
 
 if __name__ == '__main__':
