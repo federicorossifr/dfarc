@@ -51,31 +51,44 @@ def main():
     b = pa["b"]
     p = pa["p"]
     ny = pa["ny"]
-    nx = pa["nx"]
+    nx1 = pa["nx1"]
+    nx2 = pa["nx2"]
+    samex = pa["samex"]
+    commutative = pa["commutative"]
     pa["nc"] = len(p)
     nc = len(p) # constraints
     if args.minint is None:
         args.minint = 0# if pa["op"] != "/" else -args.maxint
-    Lx = [model.NewIntVar(args.minint, args.maxint, 'Lx%d'%(i+1)) for i in range(0,nx)]
+    Lx1 = [model.NewIntVar(args.minint, args.maxint, 'Lx1%d'%(i+1)) for i in range(0,nx1)]
+    if samex:
+        Lx2 = Lx1
+    else:
+        Lx2 = [model.NewIntVar(args.minint, args.maxint, 'Lx2%d'%(i+1)) for i in range(0,nx2)]
     Ly = [model.NewIntVar(args.minint, args.maxint, 'Ly%d'%(i+1)) for i in range(0,ny)]
-    print("nx %d ny %d nc %d" % (nx,ny,nc))
+    print("nx1 %d nx2 %d ny %d nc %d samex? %s " % (nx1,nx2,ny,nc,samex))
 
     # add every sum, remember indices are 1-based
-    if pa["op"] != "/":
+    if commutative: 
         for c in range(0,nc):
-            model.Add( Lx[p[c][0]-1] + Lx[p[c][1]-1] == Ly[b[c]-1])
+            model.Add( Lx1[p[c][0]-1] + Lx2[p[c][1]-1] == Ly[b[c]-1])
         LLq = [0]
     else:
         Lq = model.NewIntVar(-args.maxint, args.maxint, 'Lq')
         for c in range(0,nc):
-            model.Add( Lx[p[c][0]-1] - Lx[p[c][1]-1] == Ly[b[c]-1]+Lq)
+            model.Add( Lx1[p[c][0]-1] - Lx2[p[c][1]-1] == Ly[b[c]-1]+Lq)
         LLq = [Lq]
     # lowest shall be zero
     if args.f0:
-        model.Add(Lx[0] == 0)
-    for i in range(1,nx):
+        model.Add(Lx1[0] == 0)
+        if not samex:
+            model.Add(Lx2[0] == 0)
+    for i in range(1,nx1):
         # others shall be greater than previous
-        model.Add(Lx[i] > Lx[i-1])
+        model.Add(Lx1[i] > Lx1[i-1])
+    if not samex:
+        for i in range(1,nx2):
+            # others shall be greater than previous
+            model.Add(Lx2[i] > Lx2[i-1])
 
     # lowest shall be zero
     if args.f0:
@@ -93,19 +106,31 @@ def main():
 
     if True:
         # iminimze sum of positive values
-        s = sum(Ly)+sum(Lx)+sum(LLq)
+        s = sum(Ly)+sum(Lx1)+sum(LLq)
+        if not samex:
+            s = s + sum(Lx2)
         if args.minint < 0:
-            n = len(Ly)+len(Lx)
+            n = len(Ly)+len(Lx1)
+            if not samex:
+                n = n +len(Lx2)
             help = model.NewIntVar(args.minint*n,args.maxint*n,"H")
             if args.amin:
                 model.Add(s <= help)
                 model.Add(-s <= help)
                 model.Minimize(help)
             else:                
-                model.Minimize(Ly[-1]+Lx[-1])
+                if not samex:
+                    z =  Lx2[-1]
+                else:
+                    z = 0
+                model.Minimize(Ly[-1]+Lx1[-1]+z)
         else:
             if args.amin:
-                model.Minimize(Ly[-1]+Lx[-1])
+                if not samex:
+                    z =  Lx2[-1]
+                else:
+                    z = 0
+                model.Minimize(Ly[-1]+Lx1[-1]+z)
             else:
                 model.Minimize(s)
         status = solver.Solve(model)
@@ -113,9 +138,15 @@ def main():
         if status == cp_model.OPTIMAL:
             print('Optimal objective value: %i' % solver.ObjectiveValue())
             s=pa
-            s["Lx"] = [solver.Value(x) for x in Lx]
+            s["Lx1"] = [solver.Value(x) for x in Lx1]
+            if not samex:
+                s["Lx2"] = [solver.Value(x) for x in Lx2]
             s["Ly"] = [solver.Value(x) for x in Ly]
-            print("Lx",s["Lx"])
+            print("Lx1",s["Lx1"])
+            if not samex:
+                print("Lx2",s["Lx2"])
+            else:
+                print("Lx",s["Lx1"])                
             print("Ly",s["Ly"])
             json.dump(s,open(args.output,"w"))
         print('Statistics')
