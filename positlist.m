@@ -21,8 +21,9 @@ switch(n)
             r = posit8_2list();
         else
             r = posit8list();
-        end
+        end        
     otherwise
+        error('this posit is not suported');
             r = [];
             return;
 end

@@ -35,6 +35,7 @@ def main():
     parser.add_argument('--output','-o',default="solution.json")
     #parser.add_argument('output')
     parser.add_argument('--f0',action="store_true")
+    parser.add_argument('--nonmono',action="store_true")
     parser.add_argument('--amin',action="store_true")
     parser.add_argument('--maxint','-M',type=int,default=32768)
     parser.add_argument('--minint','-m',type=int)
@@ -82,10 +83,11 @@ def main():
         model.Add(Lx1[0] == 0)
         if not samex:
             model.Add(Lx2[0] == 0)
-    for i in range(1,nx1):
-        # others shall be greater than previous
-        model.Add(Lx1[i] > Lx1[i-1])
-    if not samex:
+    if not args.nonmono:
+        for i in range(1,nx1):
+            # others shall be greater than previous
+            model.Add(Lx1[i] > Lx1[i-1])
+    if not samex and not args.nonmono:
         for i in range(1,nx2):
             # others shall be greater than previous
             model.Add(Lx2[i] > Lx2[i-1])
@@ -93,14 +95,15 @@ def main():
     # lowest shall be zero
     if args.f0:
         model.Add(Ly[0] == 0)
-    if pa["op"] != "/":
-        for i in range(1,ny):
-            # others shall be greater than previous
-            model.Add(Ly[i] > Ly[i-1])
-    else:
-        for i in range(1,ny):
-            # others shall be greater than previous
-            model.Add(Ly[i] > Ly[i-1])
+    if not args.nonmono:
+        if pa["op"] != "/":
+            for i in range(1,ny):
+                # others shall be greater than previous
+                model.Add(Ly[i] > Ly[i-1])
+        else:
+            for i in range(1,ny):
+                # others shall be greater than previous
+                model.Add(Ly[i] > Ly[i-1])
 
     solver = cp_model.CpSolver()
 
