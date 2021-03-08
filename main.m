@@ -148,7 +148,7 @@ problem.name = name;
 
 
 f = fopen('problem.json','w');
-fwrite(f,jsonencode(problem));
+fwrite(f,jsonencode(problem));n
 fclose(f);
 %%
 problem
@@ -163,42 +163,65 @@ problem
 %
 %ILP graph is every pairs ine very row
 nc = length(b);
+if problem.samex
+    nx = nx1;
+else
+    nx = nx1+nx2;
+end
 Ac1 = zeros(nc,nx+ny); 
 Ac2 = Ac1;
 
 % for Ax<=b equality means two equations A_i x<=b_i and -A_i x <= -b_i
 bc1 = zeros(nc,1);
 bc2 = bc1;
-bnx1 = zeros(nx,1);
-bny1 = zeros(ny,1);
+bnx1 = zeros(nx1,1);
 
+bny1 = zeros(ny,1);
+if problem.samex
+    basex2=0;
+else
+    bnx2 = zeros(nx2,1);
+    basex2 = nx1-1;
+end
 for I=1:nc
     % .... <= 0
     Ac1(I,1:p(I,1)) = 1; % Li = D1 ... Di
-    Ac1(I,1:p(I,2)) = Ac1(I,1:p(I,2))+1; % Lj = D1..Dj (overlap)
+    Ac1(I,basex2+1:p(I,2)) = Ac1(I,basex2+1:p(I,2))+1; % Lj = D1..Dj (overlap)
     Ac1(I,nx+(1:b(I))) = -1; % out Lij = Q1..Qij neg 
 
     % -(...) <= 0
     Ac2(I,1:p(I,1)) = -1; % Li = D1 ... Di
-    Ac2(I,1:p(I,2)) = Ac2(I,1:p(I,2))-1; % Lj = D1..Dj (overlap)
+    Ac2(I,basex2+1:p(I,2)) = Ac2(I,basex2+1:p(I,2))-1; % Lj = D1..Dj (overlap)
     Ac2(I,nx+(1:b(I))) = 1; % out Lij = Q1..Qij neg 
 end
 
 % enforce: x_i > 0
 % as: -x_i <= -1
-Anx1 = zeros(nx,nx+ny);
+Anx1 = zeros(nx1,nx+ny);
 Any1 = zeros(ny,nx+ny);
-for I=1:nx
+for I=1:nx1
     Anx1(I,I) = -1;
     bnx1(I) = -1;
+end
+if ~problem.samex 
+    Anx2 = zeros(nx2,nx+ny);
+    for I=1:nx2
+        Anx2(I,I) = -1;
+        bnx2(I) = -1;
+    end
 end
 for I=1:ny
     Any1(I,nx+I) = -1;
     bny1(I) = -1;
 end
 
+if problem.samex
 Aq = [Ac1;Ac2;Anx1;Any1];
 bq = [bc1;bc2;bnx1;bny1];
+else
+Aq = [Ac1;Ac2;Anx1;Anx2;Any1];
+bq = [bc1;bc2;bnx1;bnx2;bny1];
+end
 
 Q=Aq'; %dual graph
 Q=Aq;  %primal
