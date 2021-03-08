@@ -20,6 +20,7 @@ switch(op)
         %l = [-l; 0; l];
         fx = @(x,y) x+y;    
         commutative = true;
+        p.nonmono = false;
     case '-'
         % only positive
         fx = @(x,y) x-y;
@@ -27,6 +28,7 @@ switch(op)
         % only positive
         fx = @(x,y) x.*y;
         commutative = true;
+        p.nonmono = false;
     case '/'
         fx = @(x,y) x./y;
     case '^'

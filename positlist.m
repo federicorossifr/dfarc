@@ -9,7 +9,7 @@ switch(n)
         assert(k==0);
         r=[0.5 1 2]';
     case 4
-        assert(k==0);
+        assert(k==0,'only k=0');
         r = posit4list();
     case 6
         assert(k==0);
@@ -27,6 +27,13 @@ switch(n)
     case 9
         if k == 2
             r = posit9_2list();
+        else
+            error('this posit is not suported');
+
+        end
+    case 10
+        if k == 2
+            r = posit10_2list();
         else
             error('this posit is not suported');
 

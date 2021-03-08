@@ -22,10 +22,18 @@ commutative = commutative && length(l1) == length(l2);
 
 if commutative 
     yb = zeros(length(l1),1); % maps of xa to Ya for identity
+    hasidentity = true;
     for I=1:length(l1)
-        yb(I) = find(y == l1(I));
+        r = find(y == l1(I));
+        if isempty(r)
+            hasidentity = false;
+            break;
+        end
+        yb(I) = r;
     end
-    hasidentity = all(all(y(yb)==l1));
+    if hasidentity
+        hasidentity = all(all(y(yb)==l1));
+    end
 else
     hasidentity= false;
 end

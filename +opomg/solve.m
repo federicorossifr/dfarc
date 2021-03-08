@@ -11,14 +11,17 @@ if exist(fp,'file')
 end
 tic
 if problem.nonmono
-    nonmono = '--nonmono'
+    nonmono = '--nonmono';
 else
     nonmono='';
 end
+if isfield(problem,'args') == 0
+    problem.args = '';
+end
 if ispc
-system(sprintf('python solve.py "%s" %s -o "%s"',fpp,nonmono,fp));
+system(sprintf('python solve.py "%s" %s %s -o "%s"',fpp,problem.args,nonmono,fp));
 else
-system(sprintf('env -i bash -l -c ''python3 solve.py "%s" %s --f0 -o "%s"''',fpp,nonmono,fp));
+system(sprintf('env -i bash -l -c ''python3 solve.py "%s" %s %s -o "%s"''',fpp,problem.args,nonmono,fp));
 end
 e = toc;
 if exist(fp,'file')     

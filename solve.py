@@ -37,7 +37,7 @@ def main():
     parser.add_argument('--f0',action="store_true")
     parser.add_argument('--nonmono',action="store_true")
     parser.add_argument('--amin',action="store_true")
-    parser.add_argument('--maxint','-M',type=int,default=32768)
+    parser.add_argument('--maxint','-M',type=int,default=32768*4)
     parser.add_argument('--minint','-m',type=int)
     args = parser.parse_args()
 
@@ -69,14 +69,14 @@ def main():
     print("nx1 %d nx2 %d ny %d nc %d samex? %s " % (nx1,nx2,ny,nc,samex))
 
     # add every sum, remember indices are 1-based
-    if pa["op"] != "/": 
+    if pa["op"] !="/" and pa["op"]!="-": 
         for c in range(0,nc):
             model.Add( Lx1[p[c][0]-1] + Lx2[p[c][1]-1] == Ly[b[c]-1])
         LLq = [0]
     else:
         Lq = model.NewIntVar(-args.maxint, args.maxint, 'Lq')
         for c in range(0,nc):
-            model.Add( Lx1[p[c][0]-1] - Lx2[p[c][1]-1] == Ly[b[c]-1]+Lq)
+            model.Add( Lx1[p[c][0]-1] - Lx2[p[c][1]-1] == Ly[b[c]-1])#+Lq)
         LLq = [Lq]
     # lowest shall be zero
     if args.f0:
@@ -87,23 +87,25 @@ def main():
         for i in range(1,nx1):
             # others shall be greater than previous
             model.Add(Lx1[i] > Lx1[i-1])
-    if not samex and not args.nonmono:
-        for i in range(1,nx2):
-            # others shall be greater than previous
-            model.Add(Lx2[i] > Lx2[i-1])
+    else:
+        model.AddAllDifferent(Lx1)
+    if not samex:
+        if not args.nonmono:
+            for i in range(1,nx2):
+                # others shall be greater than previous
+                model.Add(Lx2[i] > Lx2[i-1])
+        else:
+            model.AddAllDifferent(Lx2)
 
     # lowest shall be zero
     if args.f0:
         model.Add(Ly[0] == 0)
     if not args.nonmono:
-        if pa["op"] != "/":
-            for i in range(1,ny):
-                # others shall be greater than previous
-                model.Add(Ly[i] > Ly[i-1])
-        else:
-            for i in range(1,ny):
-                # others shall be greater than previous
-                model.Add(Ly[i] > Ly[i-1])
+        for i in range(1,ny):
+            # others shall be greater than previous
+            model.Add(Ly[i] > Ly[i-1])
+    else:
+        model.AddAllDifferent(Ly)
 
     solver = cp_model.CpSolver()
 
@@ -128,7 +130,7 @@ def main():
                     z = 0
                 model.Minimize(Ly[-1]+Lx1[-1]+z)
         else:
-            if args.amin:
+            if args.amin and not args.nonmono:
                 if not samex:
                     z =  Lx2[-1]
                 else:
