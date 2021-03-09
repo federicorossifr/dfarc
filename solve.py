@@ -34,10 +34,10 @@ def main():
     parser.add_argument('input')
     parser.add_argument('--output','-o',default="solution.json")
     #parser.add_argument('output')
-    parser.add_argument('--f0',action="store_true")
-    parser.add_argument('--nonmono',action="store_true")
+    parser.add_argument('--first0',action="store_true")
+    parser.add_argument('--mono',action="store_true")
     parser.add_argument('--amin',action="store_true")
-    parser.add_argument('--maxint','-M',type=int,default=32768*4)
+    parser.add_argument('--maxint','-M',type=int,default=32768)
     parser.add_argument('--minint','-m',type=int)
     args = parser.parse_args()
 
@@ -69,28 +69,28 @@ def main():
     print("nx1 %d nx2 %d ny %d nc %d samex? %s " % (nx1,nx2,ny,nc,samex))
 
     # add every sum, remember indices are 1-based
-    if pa["op"] !="/" and pa["op"]!="-": 
+    if commutative: 
         for c in range(0,nc):
             model.Add( Lx1[p[c][0]-1] + Lx2[p[c][1]-1] == Ly[b[c]-1])
         LLq = [0]
     else:
         Lq = model.NewIntVar(-args.maxint, args.maxint, 'Lq')
         for c in range(0,nc):
-            model.Add( Lx1[p[c][0]-1] - Lx2[p[c][1]-1] == Ly[b[c]-1])#+Lq)
+            model.Add( Lx1[p[c][0]-1] - Lx2[p[c][1]-1] + Lq == Ly[b[c]-1])
         LLq = [Lq]
     # lowest shall be zero
-    if args.f0:
+    if args.first0:
         model.Add(Lx1[0] == 0)
         if not samex:
             model.Add(Lx2[0] == 0)
-    if not args.nonmono:
+    if args.mono:
         for i in range(1,nx1):
             # others shall be greater than previous
             model.Add(Lx1[i] > Lx1[i-1])
     else:
         model.AddAllDifferent(Lx1)
     if not samex:
-        if not args.nonmono:
+        if args.mono:
             for i in range(1,nx2):
                 # others shall be greater than previous
                 model.Add(Lx2[i] > Lx2[i-1])
@@ -98,9 +98,9 @@ def main():
             model.AddAllDifferent(Lx2)
 
     # lowest shall be zero
-    if args.f0:
+    if args.first0:
         model.Add(Ly[0] == 0)
-    if not args.nonmono:
+    if args.mono:
         for i in range(1,ny):
             # others shall be greater than previous
             model.Add(Ly[i] > Ly[i-1])
@@ -130,7 +130,7 @@ def main():
                     z = 0
                 model.Minimize(Ly[-1]+Lx1[-1]+z)
         else:
-            if args.amin and not args.nonmono:
+            if args.amin and args.mono:
                 if not samex:
                     z =  Lx2[-1]
                 else:
@@ -147,6 +147,10 @@ def main():
             if not samex:
                 s["Lx2"] = [solver.Value(x) for x in Lx2]
             s["Ly"] = [solver.Value(x) for x in Ly]
+            if not commutative:
+                s["Lq"] = solver.Value(LLq[0])
+            else:
+                s["Lq"] = 0
             if not samex:
                 print("Lx1",s["Lx1"])
                 print("Lx2",s["Lx2"])

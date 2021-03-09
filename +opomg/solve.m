@@ -10,18 +10,29 @@ if exist(fp,'file')
     delete(fp,'file');
 end
 tic
-if problem.nonmono
-    nonmono = '--nonmono';
+if isfield(problem,'mono') == 0
+    problem.mono = false;
+end
+if isfield(problem,'first0') == 0
+    problem.first0 = false;
+end
+if problem.mono
+    mono = '--mono';
 else
-    nonmono='';
+    mono='';
+end
+if problem.first0
+    first0 = '--first0';
+else
+    first0='';
 end
 if isfield(problem,'args') == 0
     problem.args = '';
 end
 if ispc
-system(sprintf('python solve.py "%s" %s %s -o "%s"',fpp,problem.args,nonmono,fp));
+system(sprintf('python solve.py "%s" %s %s %s -o "%s"',fpp,problem.args,first0,mono,fp));
 else
-system(sprintf('env -i bash -l -c ''python3 solve.py "%s" %s %s -o "%s"''',fpp,problem.args,nonmono,fp));
+system(sprintf('env -i bash -l -c ''python3 solve.py "%s" %s %s %s -o "%s"''',fpp,problem.args,first0,mono,fp));
 end
 e = toc;
 if exist(fp,'file')     

@@ -13,6 +13,7 @@ l1=l1(:);
 p.l2 = l2;
 p.op = op;
 p.type = 'omgop';
+p.mono = false;
 commutative=false;
 
 switch(op)
@@ -20,19 +21,23 @@ switch(op)
         %l = [-l; 0; l];
         fx = @(x,y) x+y;    
         commutative = true;
-        p.nonmono = false;
+        p.mono = true;
     case '-'
         % only positive
         fx = @(x,y) x-y;
+        p.mono = true;
     case '*'
         % only positive
         fx = @(x,y) x.*y;
         commutative = true;
-        p.nonmono = false;
+        p.mono = true;
     case '/'
         fx = @(x,y) x./y;
+        p.mono = true;
     case '^'
         fx = @(x,y) x.^y;
+    case 'atan2'
+        fx = @(x,y) atan2(x,y);
     otherwise
         fx =op;
         p.op = 'fx';

@@ -6,6 +6,7 @@ op= pp.op;
 commutative= pp.commutative;
 name = pp.name;
 t  = pp.t;
+mono = pp.mono;
 
 %%
 [x1,~,itx1] = unique(l1);
@@ -84,15 +85,18 @@ for I=1:length(l1)
 %         end
         p(q,:)= [x1b(I),x2b(J)]; % also for combinations in Lx
         b(q) = ity(k); % in Ly
+keps= 1e-5;
         % find L(yb(I))+L(yb(J)) == L(it(k))
         if op=='+'
             assert(x1(x1b(I))+x2(x2b(J)) == y(ity(k)))
         elseif op=='*'
             assert(x1(x1b(I))*x2(x2b(J)) == y(ity(k)))
         elseif op=='/'
-           % assert(x1(x1b(I))/x2(x2b(J)) == y(ity(k)))
+            assert(((x1(x1b(I))/x2(x2b(J))) - y(ity(k))) < keps);
+        elseif strcmp(op,'atan2')
+            assert((atan2(x1(x1b(I)),x2(x2b(J))) - y(ity(k))) < keps)
         elseif op=='^'
-            assert(x1(x1b(I))^x2(x2b(J)) == y(ity(k)))
+            assert(((x1(x1b(I))^x2(x2b(J))) - y(ity(k))) < keps)
         end
         % yb(I) L1 + yb(J) L2 = it(k) Lx 
         %
@@ -123,7 +127,7 @@ problem.samex = nx1 == nx2 && all(l1 == l2);
 problem.x1 = x1;
 problem.x2 = x2;
 problem.y = y;
-problem.nonmono = true; %modify before call solvee
+problem.mono = mono; %modify before call solvee
 problem.hasidentity = hasidentity;
 problem.name = name;
 problem.type = 'omgproblem';
