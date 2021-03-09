@@ -18,9 +18,10 @@ p4=opomg.create('/',lp); % not
 p5=opomg.create('^',lp);% not
 p6=opomg.create('atan2',lp);% not
 
-p=p4
+p=p6;
 s=opomg.setup(p);
-s.mono= true;
+s.samex = true; % for division and atan2 without negative
+s.negative=true;
 r=opomg.solve(s);
 v=opomg.verify(r);
 v

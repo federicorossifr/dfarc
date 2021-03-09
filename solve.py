@@ -55,7 +55,8 @@ def main():
     nx1 = pa["nx1"]
     nx2 = pa["nx2"]
     samex = pa["samex"]
-    commutative = pa["commutative"]
+    negative = pa.get("negative",False)
+    commutative = pa["commutative"] != 0
     pa["nc"] = len(p)
     nc = len(p) # constraints
     if args.minint is None:
@@ -67,9 +68,9 @@ def main():
         Lx2 = [model.NewIntVar(args.minint, args.maxint, 'Lx2%d'%(i+1)) for i in range(0,nx2)]
     Ly = [model.NewIntVar(args.minint, args.maxint, 'Ly%d'%(i+1)) for i in range(0,ny)]
     print("nx1 %d nx2 %d ny %d nc %d samex? %s " % (nx1,nx2,ny,nc,samex))
-
+    print("problem mode: commutative:%s negative:%s samex:%s first0:%s " %(commutative,negative,samex,args.first0))
     # add every sum, remember indices are 1-based
-    if commutative: 
+    if not negative: 
         for c in range(0,nc):
             model.Add( Lx1[p[c][0]-1] + Lx2[p[c][1]-1] == Ly[b[c]-1])
         LLq = [0]
@@ -147,7 +148,8 @@ def main():
             if not samex:
                 s["Lx2"] = [solver.Value(x) for x in Lx2]
             s["Ly"] = [solver.Value(x) for x in Ly]
-            if not commutative:
+            s["negative"] = negative
+            if negative:
                 s["Lq"] = solver.Value(LLq[0])
             else:
                 s["Lq"] = 0

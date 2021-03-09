@@ -14,7 +14,7 @@ end
 if sol.samex
     sol.Lx2 = sol.Lx1;
 end
-if sol.commutative == 0
+if sol.negative
     w = all(sol.Ly(sol.b) == sol.Lx1(sol.p(:,1)) - sol.Lx2(sol.p(:,2))  + sol.Lq);
 else
     w = all(sol.Ly(sol.b) == sol.Lx1(sol.p(:,1)) + sol.Lx2(sol.p(:,2)));
