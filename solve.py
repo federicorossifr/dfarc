@@ -22,7 +22,7 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         self.__solution_count += 1
         for v in self.__variables:
             print('%s=%i' % (v, self.Value(v)), end=' ')
-        print()
+        self.StopSearch()
 
     def solution_count(self):
         return self.__solution_count
@@ -37,7 +37,8 @@ def main():
     parser.add_argument('--first0',action="store_true")
     parser.add_argument('--mono',action="store_true")
     parser.add_argument('--amin',action="store_true")
-    parser.add_argument('--maxint','-M',type=int,default=32768)
+    parser.add_argument('--firstsol',action="store_true")
+    parser.add_argument('--maxint','-M',type=int,default=32768*4)
     parser.add_argument('--minint','-m',type=int)
     args = parser.parse_args()
 
@@ -67,13 +68,13 @@ def main():
     else:
         Lx2 = [model.NewIntVar(args.minint, args.maxint, 'Lx2%d'%(i+1)) for i in range(0,nx2)]
     Ly = [model.NewIntVar(args.minint, args.maxint, 'Ly%d'%(i+1)) for i in range(0,ny)]
-    print("nx1 %d nx2 %d ny %d nc %d samex? %s " % (nx1,nx2,ny,nc,samex))
-    print("problem mode: commutative:%s negative:%s samex:%s first0:%s " %(commutative,negative,samex,args.first0))
+    print("nx1 %d nx2 %d ny %d nc %d " % (nx1,nx2,ny,nc))
+    print("problem mode name %s op %s mono:%d commutative:%s negative:%s samex:%s first0:%s " %(pa["name"],pa["op"],args.mono != 0,commutative,negative,samex,args.first0))
     # add every sum, remember indices are 1-based
     if not negative: 
         for c in range(0,nc):
             model.Add( Lx1[p[c][0]-1] + Lx2[p[c][1]-1] == Ly[b[c]-1])
-        LLq = [0]
+        LLq = []
     else:
         Lq = model.NewIntVar(-args.maxint, args.maxint, 'Lq')
         for c in range(0,nc):
@@ -110,9 +111,9 @@ def main():
 
     solver = cp_model.CpSolver()
 
-    if True:
+    if args.firstsol:
         # iminimze sum of positive values
-        s = sum(Ly)+sum(Lx1)+sum(LLq)
+        s = sum(Ly)+sum(Lx1)+(0 if len(LLq) == 0 else sum(LLq))
         if not samex:
             s = s + sum(Lx2)
         if args.minint < 0:
@@ -169,7 +170,7 @@ def main():
         #solver.parameters.search_branching = cp_model.FIXED_SEARCH
 
         # Search and print out all solutions.
-        solution_printer = VarArraySolutionPrinter(Lx1+Lx2+Ly) # skip L0 0
+        solution_printer = VarArraySolutionPrinter(Lx1+Lx2+Ly+LLq) # skip L0 0
         solver.SearchForAllSolutions(model, solution_printer)
 
 if __name__ == '__main__':
