@@ -22,7 +22,8 @@ for I=1:length(pp)
     p =pp{I};
     s=opomg.setup(p);
     s.mono=false;
-    s.args = '--firstsol';
+    %s.args = '--firstsol';
+    s.app='solve0.py';
     if s.op =='/'
     s.samex = false; % for division and atan2 without negative
     s.negative=true;

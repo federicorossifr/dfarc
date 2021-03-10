@@ -29,10 +29,13 @@ end
 if isfield(problem,'args') == 0
     problem.args = '';
 end
+if isfield(problem,'app') == 0
+    problem.app = 'solve.py';
+end
 if ispc
-system(sprintf('python solve.py "%s" %s %s %s -o "%s"',fpp,problem.args,first0,mono,fp));
+system(sprintf('python %s "%s" %s %s %s -o "%s"',problem.app,fpp,problem.args,first0,mono,fp));
 else
-system(sprintf('env -i bash -l -c ''python3 solve.py "%s" %s %s %s -o "%s"''',fpp,problem.args,first0,mono,fp));
+system(sprintf('env -i bash -l -c ''python3 %s "%s" %s %s %s -o "%s"''',problem.app,fpp,problem.args,first0,mono,fp));
 end
 e = toc;
 if exist(fp,'file')     
