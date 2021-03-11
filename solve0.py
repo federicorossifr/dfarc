@@ -10,6 +10,7 @@ import sys
 
 
 
+
 class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
     """Print intermediate solutions."""
 
@@ -22,10 +23,11 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
         self.__solution_count += 1
         for v in self.__variables:
             print('%s=%i' % (v, self.Value(v)), end=' ')
-        print()
+        self.StopSearch()
 
     def solution_count(self):
         return self.__solution_count
+
 
 
 
@@ -36,7 +38,8 @@ def main():
     #parser.add_argument('output')
     parser.add_argument('--f0',action="store_true")
     parser.add_argument('--amin',action="store_true")
-    parser.add_argument('--maxint','-M',type=int,default=32768)
+    parser.add_argument('--firstsol',action="store_true")
+    parser.add_argument('--maxint','-M',type=int,default=32768*4)
     parser.add_argument('--minint','-m',type=int)
     args = parser.parse_args()
 
@@ -51,7 +54,7 @@ def main():
     b = pa["b"]
     p = pa["p"]
     ny = pa["ny"]
-    nx = pa["nx"]
+    nx = pa["nx1"]
     pa["nc"] = len(p)
     nc = len(p) # constraints
     if args.minint is None:
@@ -91,7 +94,7 @@ def main():
 
     solver = cp_model.CpSolver()
 
-    if True:
+    if args.firstsol:
         # iminimze sum of positive values
         s = sum(Ly)+sum(Lx)+sum(LLq)
         if args.minint < 0:
@@ -113,9 +116,9 @@ def main():
         if status == cp_model.OPTIMAL:
             print('Optimal objective value: %i' % solver.ObjectiveValue())
             s=pa
-            s["Lx"] = [solver.Value(x) for x in Lx]
+            s["Lx1"] = [solver.Value(x) for x in Lx]
             s["Ly"] = [solver.Value(x) for x in Ly]
-            print("Lx",s["Lx"])
+            print("Lx1",s["Lx1"])
             print("Ly",s["Ly"])
             json.dump(s,open(args.output,"w"))
         print('Statistics')

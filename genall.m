@@ -5,7 +5,7 @@
 % - setup for resolution (as optimal problem)
 % - 
 n=8;
-pk=0;
+pk=2;
 lp = positlist(n,pk); % positive only
 l= [-lp ;0; lp]; % full
 
@@ -17,6 +17,7 @@ p5=opomg.create('^',lp);% not
 p6=opomg.create('atan2',lp);% not
 
 pp = {p1,p2,p3,p4,p6};
+pp = {p1,p2};
 rr = {};
 for I=1:length(pp)
     p =pp{I};
