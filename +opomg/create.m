@@ -1,7 +1,5 @@
 function p = create(op,l1,l2)
 
-p = [];
-p.l1 = l1;
 if nargin < 3
     l2 = [];
 end
@@ -10,6 +8,8 @@ if isempty(l2)
 end
 l2=l2(:);
 l1=l1(:);
+p = [];
+p.l1 = l1;
 p.l2 = l2;
 p.op = op;
 p.type = 'omgop';
@@ -38,6 +38,9 @@ switch(op)
         fx = @(x,y) x.^y;
     case 'atan2'
         fx = @(x,y) atan2(x,y);
+        p.mono = false;
+        p.samex = false;
+        p.negaive = true;
     otherwise
         fx =op;
         p.op = 'fx';

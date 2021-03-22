@@ -40,9 +40,8 @@ end
 e = toc;
 if exist(fp,'file')     
     r = opomg.loadsolution(fp);
-    if ~isempty(r)
-        r.elapsed  = e;
-    end
 else
     r = [];
+    r.solved = false;
 end
+        r.elapsed  = e;

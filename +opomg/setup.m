@@ -40,10 +40,10 @@ else
 end
 
 % build constraints using the
-if commutative  == 0
-    c = length(l1)*length(l2);
-else
+if commutative
     c = length(l1)*(length(l2)+1)/2; % max due to symmetry
+else
+    c = length(l1)*length(l2);
 end
 %A=zeros(c,ny);
 p=zeros(c,2); % index pairs due to binop, also for a op a
@@ -51,10 +51,10 @@ b=zeros(c,1);
 % half of them!
 q=0;
 for I=1:length(l1)
-    if commutative == 0
-        J0=1; % all pairs
-    else
+    if commutative
         J0=I; % symmetry
+    else
+        J0=1; % all pairs
     end
     for J=J0:length(l2)
         k = sub2ind(size(t),I,J); % index in table t of product and of mapping
@@ -127,6 +127,8 @@ problem.samex = nx1 == nx2 && all(l1 == l2);
 problem.x1 = x1;
 problem.x2 = x2;
 problem.y = y;
+problem.negative = false;
+problem.app = 'solve.py';
 problem.mono = mono; %modify before call solvee
 problem.hasidentity = hasidentity;
 problem.name = name;

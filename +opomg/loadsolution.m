@@ -1,7 +1,7 @@
 function r = loadsolution(filename)
 t = fileread(filename);
 r = jsondecode(t);
-if isempty(r)
+if isempty(r)|| ~isfield(r,'Ly')
     r = [];
     r.solved = false;
 else

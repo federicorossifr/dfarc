@@ -111,7 +111,7 @@ def main():
 
     solver = cp_model.CpSolver()
 
-    if args.firstsol:
+    if not args.firstsol:
         # iminimze sum of positive values
         s = sum(Ly)+sum(Lx1)+(0 if len(LLq) == 0 else sum(LLq))
         if not samex:

@@ -5,7 +5,7 @@
 % - setup for resolution (as optimal problem)
 % - 
 n=8;
-pk=2;
+pk=2;a
 lp = positlist(n,pk); % positive only
 l= [-lp ;0; lp]; % full
 

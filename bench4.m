@@ -7,17 +7,19 @@ n=4;
 pk=0;
 rname = sprintf('posit%d,%d',n,pk);
 lp = positlist(n,pk); % positive only
-l= [-lp ;0; lp]; % full
+l= [-lp ;0; lp]; % ful
+lpg1 = lp(lp >= 1);
 
 p1=opomg.create('+',lp);        
 p2=opomg.create('*',lp);
 p3=opomg.create('-',lp); % not
 p4=opomg.create('/',lp); % not
-p5=opomg.create('^',lp);% not
+p5=opomg.create('^',lp,lp);% not
 p6=opomg.create('atan2',lp);% not
 
-pp = {p1,p2,p3,p4,p5,p6};
+pp = {p1,p2,p3,p4,p6};
 %pp = {p1,p2};
+%pp={p6};
 rr = {};
 rrs=[];
 for I=1:length(pp)
@@ -32,9 +34,9 @@ for I=1:length(pp)
     if s.op =='-'
     s.negative=true;
     end
-    if s.op =='^'
-        s.samex = true;
-        s.mono =false;
+    if strcmp(s.op,'atan2')
+        s.samex = false;
+        s.mono=false;
     end
     r=opomg.solve(s);
     v=opomg.verify(r);

@@ -38,6 +38,7 @@ def main():
     #parser.add_argument('output')
     parser.add_argument('--f0',action="store_true")
     parser.add_argument('--amin',action="store_true")
+    parser.add_argument('--mono',action="store_true")
     parser.add_argument('--firstsol',action="store_true")
     parser.add_argument('--maxint','-M',type=int,default=32768*4)
     parser.add_argument('--minint','-m',type=int)
@@ -94,7 +95,7 @@ def main():
 
     solver = cp_model.CpSolver()
 
-    if args.firstsol:
+    if not args.firstsol:
         # iminimze sum of positive values
         s = sum(Ly)+sum(Lx)+sum(LLq)
         if args.minint < 0:
@@ -118,9 +119,11 @@ def main():
             s=pa
             s["Lx1"] = [solver.Value(x) for x in Lx]
             s["Ly"] = [solver.Value(x) for x in Ly]
-            print("Lx1",s["Lx1"])
-            print("Ly",s["Ly"])
+            #print("Lx1",s["Lx1"])
+            #print("Ly",s["Ly"])
             json.dump(s,open(args.output,"w"))
+        else:
+            json.dump(pa,open(args.output,"w"))
         print('Statistics')
         print('  - conflicts : %i' % solver.NumConflicts())
         print('  - branches  : %i' % solver.NumBranches())
