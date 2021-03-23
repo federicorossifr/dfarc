@@ -24,9 +24,9 @@ p5.ename = '(x>1)';
 p5n.ename = '(x<1)';
 p6=opomg.create('atan2',lp);% not
 
+pp = {p1,p2,p3,p4,p5,p5n,p6};
 pp = {p1,p2,p3,p4}; %,p5,p5n,p6};
 %pp = {p1,p2};
-%pp={p6};
 rr = {};
 rrs=[];
 for I=1:length(pp)
@@ -35,8 +35,9 @@ for I=1:length(pp)
     %s.args = '--firstsol';
     %s.app='solve0.py';
     if s.op =='/'
-    s.samex = false; % for division and atan2 without negative
+    s.samex = true; % for division and atan2 without negative
     s.negative=true;
+    s.mono=true;
     end
     if s.op =='-'
     s.negative=true;

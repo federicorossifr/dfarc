@@ -3,7 +3,7 @@
 % - omg problem
 % - setup for resolution (as optimal problem)
 % - 
-n=8;
+n=6;
 pk=0;
 rname = sprintf('posit%d,%d',n,pk);
 lp = positlist(n,pk); % positive only
@@ -26,7 +26,7 @@ p6=opomg.create('atan2',lp);% not
 
 pp = {p1,p2,p3,p4,p5,p5n,p6};
 %pp = {p1,p2};
-%pp={p6};
+pp = {p1,p2,p3,p4};
 rr = {};
 rrs=[];
 for I=1:length(pp)
@@ -35,8 +35,9 @@ for I=1:length(pp)
     %s.args = '--firstsol';
     %s.app='solve0.py';
     if s.op =='/'
-    s.samex = false; % for division and atan2 without negative
+    s.samex = true; % for division and atan2 without negative
     s.negative=true;
+    s.mono= true;
     end
     if s.op =='-'
     s.negative=true;

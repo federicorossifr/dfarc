@@ -32,7 +32,7 @@ for I=1:length(pp)
     %s.args = '--firstsol';
     %s.app='solve0.py';
     if s.op =='/'
-    s.samex = false; % for division and atan2 without negative
+    s.samex = true; % for division and atan2 without negative
     s.negative=true;
     end
     if s.op =='-'
