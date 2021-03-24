@@ -33,9 +33,11 @@ if isfield(problem,'app') == 0
     problem.app = 'solve.py';
 end
 if ispc
-system(sprintf('python %s "%s" %s %s %s -o "%s"',problem.app,fpp,problem.args,first0,mono,fp));
+    cmd=sprintf('python %s "%s" %s %s %s -o "%s"',problem.app,fpp,problem.args,first0,mono,fp);
+system(cmd);
 else
-system(sprintf('env -i bash -l -c ''python3 %s "%s" %s %s %s -o "%s"''',problem.app,fpp,problem.args,first0,mono,fp));
+    cmd=sprintf('env -i bash -l -c ''python3 %s "%s" %s %s %s -o "%s"''',problem.app,fpp,problem.args,first0,mono,fp);
+system(cmd);
 end
 e = toc;
 if exist(fp,'file')     
@@ -44,4 +46,5 @@ else
     r = [];
     r.solved = false;
 end
+    r.cmd=cmd;
         r.elapsed  = e;

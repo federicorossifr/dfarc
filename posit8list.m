@@ -1,4 +1,11 @@
-function r = posit8list()
+function r = posit8list(s)
+
+if nargin == 0
+    s = 0;
+end
+if s == 1
+    % 2^k (1 + f 2^F)
+else
 
 r=[0.015625
 0.03125
@@ -128,3 +135,4 @@ r=[0.015625
 32
 64
 ];
+end
