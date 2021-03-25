@@ -32,11 +32,15 @@ end
 if isfield(problem,'app') == 0
     problem.app = 'solve.py';
 end
+if isfield(problem,'maxint') == 0
+    problem.maxint = 32768*4;
+end
+
 if ispc
-    cmd=sprintf('python %s "%s" %s %s %s -o "%s"',problem.app,fpp,problem.args,first0,mono,fp);
+    cmd=sprintf('python %s "%s" %s %s %s --maxint %d -o "%s"',problem.app,fpp,problem.args,first0,mono,problem.maxint,fp);
 system(cmd);
 else
-    cmd=sprintf('env -i bash -l -c ''python3 %s "%s" %s %s %s -o "%s"''',problem.app,fpp,problem.args,first0,mono,fp);
+    cmd=sprintf('env -i bash -l -c ''python3 %s "%s" %s %s %s  --maxint %d -o "%s"''',problem.app,fpp,problem.args,first0,mono,problem.maxint,fp);
 system(cmd);
 end
 e = toc;

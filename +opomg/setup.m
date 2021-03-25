@@ -133,4 +133,7 @@ problem.mono = mono; %modify before call solvee
 problem.hasidentity = hasidentity;
 problem.name = name;
 problem.type = 'omgproblem';
+if isfield(pp,'maxint')
+    problem.maxint = pp.maxint;
+end
 p = problem;
