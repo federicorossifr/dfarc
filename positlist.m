@@ -2,7 +2,7 @@ function r = positlist(n,k)
 
 if k > 2
     r=[];
-            return;
+     return;
 else
 switch(n)
     case 2
@@ -25,14 +25,18 @@ switch(n)
             error('this posit is not suported');
         end        
     case 9
-        if k == 2
+        if k == 0
+            r = posit9_0list();
+        elseif k == 2
             r = posit9_2list();
         else
             error('this posit is not suported');
 
         end
     case 10
-        if k == 2
+        if k == 0
+            r = posit10_0list();
+        elseif k == 2
             r = posit10_2list();
         else
             error('this posit is not suported');

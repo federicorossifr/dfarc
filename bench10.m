@@ -5,7 +5,7 @@
 % - 
 n=10;
 K=16;
-pk=2;
+pk=0;
 rname = sprintf('posit%d,%d',n,pk);
 lp = positlist(n,pk); % positive only
 l= [-lp ;0; lp]; % ful
@@ -23,7 +23,7 @@ p6=opomg.create('atan2',lp,[],rname,K);% not
 
 pp = {p1,p2,p3,p4,p5,p5n,p6};
 pp = {p1,p2,p3,p4}; %,p5,p5n,p6};
-pp={p1};
+pp={p1,p2};
 %pp={p4};
 %pp = {p1,p2};
 rr = {};
