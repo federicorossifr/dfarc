@@ -3,8 +3,8 @@
 % - omg problem
 % - setup for resolution (as optimal problem)
 % - 
-n=8;
-K=6;
+n=10;
+K=16;
 pk=2;
 rname = sprintf('posit%d,%d',n,pk);
 lp = positlist(n,pk); % positive only

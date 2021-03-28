@@ -3,8 +3,8 @@
 % - omg problem
 % - setup for resolution (as optimal problem)
 % - 
-n=8;
-K=6;
+n=9;
+K=8;
 pk=2;
 rname = sprintf('posit%d,%d',n,pk);
 lp = positlist(n,pk); % positive only
@@ -23,7 +23,7 @@ p6=opomg.create('atan2',lp,[],rname,K);% not
 
 pp = {p1,p2,p3,p4,p5,p5n,p6};
 pp = {p1,p2,p3,p4}; %,p5,p5n,p6};
-pp={p1};
+pp={p2};
 %pp={p4};
 %pp = {p1,p2};
 rr = {};

@@ -17,12 +17,16 @@ end
 l2=l2(:);
 l1=l1(:);
 if K > 1
-    
+    commutative = strcmp(op,'+') || strcmp(op,'*');
     p={};
     p1 =fix(linspace(1,length(l1),K+1));
     p2 =fix(linspace(1,length(l2),K+1));
     for I=1:length(p1)-1
-        J1=1;
+        if commutative
+            J1=I;
+        else
+            J1=1;
+        end
         for J=J1:length(p2)-1
             ename = [name sprintf('split%dx%d',I,J)];
             al1 = l1(p1(I):p1(I+1));
@@ -80,3 +84,6 @@ p.t = t;
 p.name = op;
 p.ename=name;
 p.commutative=commutative;
+
+
+
