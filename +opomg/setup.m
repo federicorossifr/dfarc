@@ -1,5 +1,13 @@
 function p = setup(pp)
 
+if iscell(pp)
+    p={};
+    for I=1:length(pp)
+        p=[p;opomg.setup(pp{I})];
+    end
+    return;
+end
+
 l1 = pp.l1;
 l2 = pp.l2;
 op= pp.op;
@@ -14,7 +22,7 @@ assert(all(diff(x1)) > 0); % ordered
 [x2,~,itx2] = unique(l2);
 assert(all(diff(x2)) > 0); % ordered
 [y,~,ity] = unique(t); % totals, andt the map from every matrix element to eacy y
-assert(all(diff(y)) > 0); % ordered
+assert(all(diff(y)) > 0); % ordered  
 ny = length(y);
 
 x1b = itx1;
@@ -133,6 +141,9 @@ problem.mono = mono; %modify before call solvee
 problem.hasidentity = hasidentity;
 problem.name = name;
 problem.type = 'omgproblem';
+if isfield(pp,'negative')
+    problem.negative = pp.negative;
+end
 if isfield(pp,'maxint')
     problem.maxint = pp.maxint;
 end

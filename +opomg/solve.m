@@ -1,5 +1,13 @@
 function r = solve(problem)
 
+if iscell(problem)
+    r={};
+    for I=1:length(problem)
+        r=[r;opomg.solve(problem{I})];
+    end
+    return;
+end
+
 problem.fx = [];
 fpp = 'problem.json';
 f = fopen(fpp,'w');

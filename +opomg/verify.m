@@ -1,5 +1,14 @@
 function r = verifysolution(sol)
 
+
+if iscell(sol)
+    r={};
+    for I=1:length(sol)
+        r=[r;opomg.verify(sol{I})];
+    end
+    return;
+end
+
 if isempty(sol)
     r.solved = false;
     r.verified = false;
