@@ -27,7 +27,7 @@ ny = length(y);
 
 x1b = itx1;
 x2b = itx2;
-commutative = commutative && length(l1) == length(l2);
+%commutative = commutative && length(l1) == length(l2);
 
 if commutative 
     yb = zeros(length(l1),1); % maps of xa to Ya for identity
@@ -49,7 +49,7 @@ end
 
 % build constraints using the
 if commutative
-    c = length(l1)*(length(l2)+1)/2; % max due to symmetry
+    c = ceil(length(l1)*(length(l2)+1)/2); % max due to symmetry
 else
     c = length(l1)*length(l2);
 end

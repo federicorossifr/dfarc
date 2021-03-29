@@ -5,7 +5,7 @@
 % - 
 n=9;
 K=8;
-pk=2;
+pk=0;
 rname = sprintf('posit%d,%d',n,pk);
 lp = positlist(n,pk); % positive only
 l= [-lp ;0; lp]; % ful
