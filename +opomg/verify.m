@@ -14,6 +14,7 @@ if isempty(sol)
     r.verified = false;
     return;
 end
+sol.verified = 0;
 if ~sol.solved
     r = sol; 
     r.verified = false;

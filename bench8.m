@@ -4,7 +4,7 @@
 % - setup for resolution (as optimal problem)
 % - 
 n=8;
-K=6;
+K=1;
 pk=2;
 rname = sprintf('posit%d,%d',n,pk);
 lp = positlist(n,pk); % positive only
@@ -12,6 +12,7 @@ l= [-lp ;0; lp]; % ful
 lpg1 = lp(lp > 1);
 lpl1 = lp(lp < 1);
 lpn1 =lp(lp~=1);
+lp = lp(lp >= 1 & lp <= 2);
 
 p1=opomg.create('+',lp,[],rname,K);        
 p2=opomg.create('*',lp,[],rname,K);
@@ -23,7 +24,7 @@ p6=opomg.create('atan2',lp,[],rname,K);% not
 
 pp = {p1,p2,p3,p4,p5,p5n,p6};
 pp = {p1,p2,p3,p4}; %,p5,p5n,p6};
-pp={p1};
+%pp={p1};
 %pp={p4};
 %pp = {p1,p2};
 rr = {};

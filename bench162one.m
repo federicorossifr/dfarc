@@ -1,16 +1,15 @@
+
 % Concepts
 % - list of numbers
 % - omg problem
 % - setup for resolution (as optimal problem)
 % - 
-K=1;
-lp = bfloat8();
-rname = 'bfloat8';
-l= [-lp ;0; lp]; % ful
-lpg1 = lp(lp > 1);
-lpl1 = lp(lp < 1);
-lpn1 =lp(lp~=1);
-lp = lp(lp >=1 & lp <= 2);
+K=16;
+n=16;
+pk=2;
+rname = sprintf('posit%d,%d',n,pk);
+lp = posit16_2one();
+lp = lp(lp >= 1 & lp <= 2);
 
 p1=opomg.create('+',lp,[],rname,K);        
 p2=opomg.create('*',lp,[],rname,K);
@@ -22,6 +21,7 @@ p6=opomg.create('atan2',lp,[],rname,K);% not
 
 pp = {p1,p2,p3,p4,p5,p5n,p6};
 pp = {p1,p2,p3,p4}; %,p5,p5n,p6};
+pp={p2};
 %pp={p4};
 %pp = {p1,p2};
 rr = {};

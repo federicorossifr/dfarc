@@ -12,8 +12,11 @@ switch(n)
         assert(k==0,'only k=0');
         r = posit4list();
     case 6
-        assert(k==0);
-        r = posit6list();
+        if k == 2
+            r = posit6_2list();
+        else
+            r = posit6list();
+        end
     case 8
         if k == 1
             r = posit8_1list();

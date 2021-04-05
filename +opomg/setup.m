@@ -104,7 +104,7 @@ keps= 1e-5;
         elseif strcmp(op,'atan2')
             assert((atan2(x1(x1b(I)),x2(x2b(J))) - y(ity(k))) < keps)
         elseif op=='^'
-            assert(((x1(x1b(I))^x2(x2b(J))) - y(ity(k))) < keps)
+          %  assert(((x1(x1b(I))^x2(x2b(J))) - y(ity(k))) < keps)
         end
         % yb(I) L1 + yb(J) L2 = it(k) Lx 
         %
