@@ -18,17 +18,22 @@ if exist(fp,'file')
     delete(fp,'file');
 end
 tic
-if isfield(problem,'mono') == 0
-    problem.mono = false;
+if isfield(problem,'xpolicy') == 0 && isfield(problem,'ypolicy') == 0
+    % enforce mono
+    if isfield(problem,'mono') == 0
+        problem.xpolicy = 'distinct';
+        problem.ypolicy = 'distinct';
+    else
+        problem.xpolicy = 'mono';
+        problem.ypolicy = 'mono';
+    end
 end
 if isfield(problem,'first0') == 0
     problem.first0 = false;
 end
-if problem.mono
-    mono = '--mono';
-else
-    mono='';
-end
+xpolicy = ['--xpolicy ' problem.xpolicy];
+ypolicy = ['--ypolicy ' problem.ypolicy];
+
 if problem.first0
     first0 = '--first0';
 else
@@ -40,16 +45,25 @@ end
 if isfield(problem,'app') == 0
     problem.app = 'solve.py';
 end
+if isfield(problem,'minint') == 0
+    minint = '';
+else
+    if isnan(problem.minint)
+        minint = '';
+    else
+        minint = sprintf('--minint %d',problem.minint);
+    end
+end
 if isfield(problem,'maxint') == 0
     problem.maxint = 0;
 end
 
 if ispc
-    cmd=sprintf('python %s "%s" %s %s %s --maxint %d -o "%s"',problem.app,fpp,problem.args,first0,mono,problem.maxint,fp);
+    cmd=sprintf('python %s "%s" %s %s %s %s %s --maxint %d -o "%s"',problem.app,fpp,problem.args,first0,xpolicy,ypolicy,minint,problem.maxint,fp);
 system(cmd);
 else
     py='/Users/eruffaldi/venv/bin/python3';
- cmd=sprintf('env -i bash -l -c ''%s %s "%s" %s %s %s  --maxint %d -o "%s"''',py,problem.app,fpp,problem.args,first0,mono,problem.maxint,fp);
+ cmd=sprintf('env -i bash -l -c ''%s %s "%s" %s %s %s %s %s --maxint %d -o "%s"''',py,problem.app,fpp,problem.args,first0,xpolicy,ypolicy,minint,problem.maxint,fp);
 system(cmd);
 end
 e = toc;

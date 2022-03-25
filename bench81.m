@@ -39,7 +39,7 @@ for I=1:length(pp)
         s.mono=true;
     end
     if s.op =='-'
-    s.negative=true;
+      s.negative=true;
     end
     if strcmp(s.op,'atan2')
         s.samex = false;

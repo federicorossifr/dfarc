@@ -34,11 +34,12 @@ def main():
     parser.add_argument('input')
     parser.add_argument('--output','-o',default="solution.json")
     #parser.add_argument('output')
-    parser.add_argument('--first0',action="store_true")
-    parser.add_argument('--mono',action="store_true")
+    parser.add_argument('--first0',action="store_true",help="Enforce that first Lx and first Ly are ZERO")
+    parser.add_argument('--xpolicy',choices=["distinct","mono","none"],default="none")
+    parser.add_argument('--ypolicy',choices=["distinct","mono","none"],default="none")
     parser.add_argument('--amin',action="store_true")
     parser.add_argument('--firstsol',action="store_true")
-    parser.add_argument('--maxint','-M',type=int)
+    parser.add_argument('--maxint','-M',type=int,help="Fix maximum of Lx and Ly, otherwise compute automatically")
     parser.add_argument('--minint','-m',type=int)
     args = parser.parse_args()
 
@@ -55,10 +56,12 @@ def main():
     ny = pa["ny"]
     nx1 = pa["nx1"]
     nx2 = pa["nx2"]
-    samex = pa["samex"]
-    negative = pa.get("negative",False)
-    commutative = pa["commutative"] != 0
+    samex = pa["samex"] # enforce same Lx1=Lx2
+    negative = pa.get("negative",False) # allow negative solutions 
+    commutative = pa["commutative"] != 0 # NO EFFECT
     pa["nc"] = len(p)
+    pa["xpolicy"] = args.xpolicy
+    pa["ypolicy"] = args.ypolicy
     nc = len(p) # constraints
     if args.minint is None:
         args.minint = 0
@@ -71,7 +74,7 @@ def main():
         Lx2 = [model.NewIntVar(args.minint, args.maxint, 'Lx2%d'%(i+1)) for i in range(0,nx2)]
     Ly = [model.NewIntVar(args.minint, args.maxint, 'Ly%d'%(i+1)) for i in range(0,ny)]
     print("nx1 %d nx2 %d ny %d nc %d " % (nx1,nx2,ny,nc))
-    print("problem mode name %s op %s mono:%d commutative:%s negative:%s samex:%s first0:%s maxint:%d minint:%d" %(pa["name"],pa["op"],args.mono != 0,commutative,negative,samex,args.first0,args.maxint,args.minint))
+    print("problem mode name %s op %s xpolicy:%s ypolicy:%s commutative:%s negative:%s samex:%s first0:%s maxint:%d minint:%d" %(pa["name"],pa["op"],args.xpolicy,args.ypolicy,commutative,negative,samex,args.first0,args.maxint,args.minint))
     # add every sum, remember indices are 1-based
     if not negative: 
         for c in range(0,nc):
@@ -87,29 +90,31 @@ def main():
         model.Add(Lx1[0] == 0)
         if not samex:
             model.Add(Lx2[0] == 0)
-    if args.mono:
+    if args.xpolicy == "mono":
         for i in range(1,nx1):
             # others shall be greater than previous
             model.Add(Lx1[i] > Lx1[i-1])
-    else:
-        model.AddAllDifferent(Lx1)
-    if not samex:
-        if args.mono:
+        if not samex:
             for i in range(1,nx2):
                 # others shall be greater than previous
                 model.Add(Lx2[i] > Lx2[i-1])
-        else:
+    elif args.xpolicy == "distinct":
+        model.AddAllDifferent(Lx1)
+        if not samex:
             model.AddAllDifferent(Lx2)
 
     # lowest shall be zero
     if args.first0:
         model.Add(Ly[0] == 0)
-    if args.mono:
+
+    if args.ypolicy == "mono":
         for i in range(1,ny):
             # others shall be greater than previous
             model.Add(Ly[i] > Ly[i-1])
-    else:
+    elif args.ypolicy == "distinct":
         model.AddAllDifferent(Ly)
+    else:
+        pass
 
     solver = cp_model.CpSolver()
 
@@ -118,6 +123,8 @@ def main():
         s = sum(Ly)+sum(Lx1)+(0 if len(LLq) == 0 else sum(LLq))
         if not samex:
             s = s + sum(Lx2)
+
+        # special case for negative
         if args.minint < 0:
             n = len(Ly)+len(Lx1)
             if not samex:
@@ -134,7 +141,8 @@ def main():
                     z = 0
                 model.Minimize(Ly[-1]+Lx1[-1]+z)
         else:
-            if args.amin and args.mono:
+            # monotonic problem and amin enforces only final term not all terms
+            if args.amin and args.xpolicy == "mono" and args.ypolicy == "mono":
                 if not samex:
                     z =  Lx2[-1]
                 else:
