@@ -65,7 +65,7 @@ switch(op)
     case '/'
         fx = @(x,y) x./y;
         p.mono = true;
-       p.samex = true; % for division and atan2 without negative
+        p.samex = true; % for division and atan2 without negative
         p.negative=true;
     case '^'
         fx = @(x,y) x.^y;

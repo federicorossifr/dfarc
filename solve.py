@@ -38,7 +38,7 @@ def main():
     parser.add_argument('--mono',action="store_true")
     parser.add_argument('--amin',action="store_true")
     parser.add_argument('--firstsol',action="store_true")
-    parser.add_argument('--maxint','-M',type=int,default=32768*4)
+    parser.add_argument('--maxint','-M',type=int)
     parser.add_argument('--minint','-m',type=int)
     args = parser.parse_args()
 
@@ -61,7 +61,9 @@ def main():
     pa["nc"] = len(p)
     nc = len(p) # constraints
     if args.minint is None:
-        args.minint = 0# if pa["op"] != "/" else -args.maxint
+        args.minint = 0
+    if args.maxint is None or args.maxint == 0:
+        args.maxint = (nx1+1)*(nx2+1) # if pa["op"] != "/" else -args.maxint
     Lx1 = [model.NewIntVar(args.minint, args.maxint, 'Lx1%d'%(i+1)) for i in range(0,nx1)]
     if samex:
         Lx2 = Lx1
@@ -69,7 +71,7 @@ def main():
         Lx2 = [model.NewIntVar(args.minint, args.maxint, 'Lx2%d'%(i+1)) for i in range(0,nx2)]
     Ly = [model.NewIntVar(args.minint, args.maxint, 'Ly%d'%(i+1)) for i in range(0,ny)]
     print("nx1 %d nx2 %d ny %d nc %d " % (nx1,nx2,ny,nc))
-    print("problem mode name %s op %s mono:%d commutative:%s negative:%s samex:%s first0:%s " %(pa["name"],pa["op"],args.mono != 0,commutative,negative,samex,args.first0))
+    print("problem mode name %s op %s mono:%d commutative:%s negative:%s samex:%s first0:%s maxint:%d minint:%d" %(pa["name"],pa["op"],args.mono != 0,commutative,negative,samex,args.first0,args.maxint,args.minint))
     # add every sum, remember indices are 1-based
     if not negative: 
         for c in range(0,nc):

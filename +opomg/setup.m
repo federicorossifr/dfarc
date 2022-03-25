@@ -45,6 +45,7 @@ if commutative
     end
 else
     hasidentity= false;
+    yb = []; 
 end
 
 % build constraints using the
@@ -131,14 +132,14 @@ problem.op = op;
 problem.p = p; % shorter
 problem.b= b;
 problem.commutative = commutative;
-problem.samex = nx1 == nx2 && all(l1 == l2);
+problem.samex = nx1 == nx2 && all(l1 == l2); % very important hint
 problem.x1 = x1;
 problem.x2 = x2;
 problem.y = y;
 problem.negative = false;
 problem.app = 'solve.py';
 problem.mono = mono; %modify before call solvee
-problem.hasidentity = hasidentity;
+problem.hasidentity = hasidentity; % NOT used by solver 
 problem.name = name;
 problem.type = 'omgproblem';
 if isfield(pp,'negative')

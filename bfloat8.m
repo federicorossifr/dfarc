@@ -1,4 +1,4 @@
-
+% this is bfloat8 = FP8_E5_M2
 function x= bfloat8()
 
 x=[6.10352E-05

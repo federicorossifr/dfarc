@@ -4,7 +4,7 @@
 % - setup for resolution (as optimal problem)
 % - 
 n=8;
-pk=1;
+pk=0;
 rname = sprintf('posit%d,%d',n,pk);
 lp = positlist(n,pk); % positive only
 l= [-lp ;0; lp]; % ful
@@ -13,7 +13,6 @@ lpl1 = lp(lp < 1);
 lpn1 =lp(lp~=1);
 
 p1=opomg.create('+',lp);
-p1.maxint = 32768*32;
 p2=opomg.create('*',lp);
 p3=opomg.create('-',lp); % not
 p4=opomg.create('/',lp); % not
@@ -25,7 +24,7 @@ p6=opomg.create('atan2',lp);% not
 
 pp = {p1,p2,p3,p4,p5,p5n,p6};
 pp = {p1,p2,p3,p4}; %,p5,p5n,p6};
-pp={p1};
+pp={p2};
 %pp = {p1,p2};
 rr = {};
 rrs=[];
@@ -35,9 +34,9 @@ for I=1:length(pp)
     %s.args = '--firstsol';
     %s.app='solve0.py';
     if s.op =='/'
-    s.samex = true; % for division and atan2 without negative
-    s.negative=true;
-    s.mono=true;
+        s.samex = true; % for division and atan2 without negative
+        s.negative=true;
+        s.mono=true;
     end
     if s.op =='-'
     s.negative=true;
@@ -46,8 +45,10 @@ for I=1:length(pp)
         s.samex = false;
         s.mono=false;
     end
+    s.samex=false; % important
 
-    r=opomg.solve(s);
+    r=opomg.solve(s);  
+    % use solvenaive
     v=opomg.verify(r);
     rr{end+1}= v;
     rs = struct();

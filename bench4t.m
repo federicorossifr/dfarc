@@ -79,9 +79,9 @@ rrs
 %%
 ra=rr{1};
 r=rr{2};
+r2 = opomg.binexpand(r);
 r05 = opomg.binexpand(r,-1);
 r025 = opomg.binexpand(r05,-1);
-r2 = opomg.binexpand(r);
 r4 = opomg.binexpand(r2);
 r8 = opomg.binexpand(r4);
 disp('showbinades all')
@@ -111,3 +111,32 @@ disp('verify');
  v2.verified
  v4.verified
  v8.verified
+
+%%
+r=rr{2};
+for I=1:3
+    r =opomg.binexpand(r,1);
+    % r=opomg.binexpand(r,-1);    
+end
+assert(all(diff(r.Lx1)) > 0,'all Lx shall be monotonic');
+assert(all(diff(r.Ly)) > 0,'all Lx shall be monotonic');
+vr=opomg.verify(r);
+disp('verified')
+vr.verified
+%    r =opomg.binexpand(r,-1);
+disp('expanded vs opt')
+disp('binaded')
+countbinades(r.x1)'
+countbinades(ra.x1)'
+disp('Lx')
+[r.Lx1(1),r.Lx1(end)]
+[ra.Lx1(1),ra.Lx1(end)]
+disp('margin')
+[r.x1(1),r.x1(end)]
+[ra.x1(1),ra.x1(end)]
+disp('Lx max')
+r.Lx1(end)-r.Lx1(1)
+ra.Lx1(end)-ra.Lx1(1)
+disp('Ly max')
+r.Ly(end)-r.Ly(1)
+ra.Ly(end)-ra.Ly(1)
