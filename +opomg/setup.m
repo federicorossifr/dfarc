@@ -28,6 +28,10 @@ assert(all(diff(x2)) > 0); % ordered
 x1b = itx1;
 x2b = itx2;
 [y,~,ity] = unique(t); % totals, andt the map from every matrix element to eacy y
+    % hints
+    Lx1 = [];
+    Lx2 = [];
+    Ly =[];
 
 if pp.full
     c = length(x1)*length(x2); 
@@ -35,18 +39,23 @@ if pp.full
     b=zeros(c,1);
     q = 0;
     y=zeros(c,1);
+    Ly = zeros(c,1);
+    Lx1 = 0:(length(x1)-1); % 0..(#X1-1)
+    Lx2 = (0:length(x2)-1)*length(x1); % #X1..(#X1 #X2-1)
     for I=1:length(l1)
         for J=1:length(l2)
             k = sub2ind(size(t),I,J);
             q = q + 1;
             p(q,:)= [x1b(I),x2b(J)]; % also for combinations in Lx
             b(q) = q;
+            Ly(q)= Lx1(I)+Lx2(J); % hint
             y(q) = t(I,J);
         end
     end        
     eqgroups = ity;
     b = b(1:q,:);
     p = p(1:q,:);
+    Ly = Ly(1:q,:);
     ny = length(b);
     hasidentity = 1;
 else
@@ -164,6 +173,9 @@ problem.commutative = commutative;
 problem.samex = nx1 == nx2 && all(l1 == l2); % very important hint
 problem.x1 = x1;
 problem.x2 = x2;
+problem.Lx1 = Lx1;
+problem.Lx2 = Lx2;
+problem.Ly = Ly;
 problem.y = y;
 problem.negative = false;
 problem.app = 'solve.py';

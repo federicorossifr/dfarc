@@ -3,7 +3,7 @@
 % - omg problem
 % - setup for resolution (as optimal problem)
 % - 
-n=4;
+n=3;
 pk=0;
 rname = sprintf('posit%d,%d',n,pk);
 lp = positlist(n,pk); % positive only
@@ -17,17 +17,21 @@ p2=opomg.create('*',lp);
 p3=opomg.create('-',lp); % not
 p4=opomg.create('/',lp); % not
 p5=opomg.create('^',lp);% not
+%p5n=opomg.create('^',lpl1,lp);% not
+%p5.ename = '(x>1)';
+%p5n.ename = '(x<1)';
 p6=opomg.create('atan2',lp);% not
 
 pp = {p1,p2,p3,p4,p5,p6};
 %pp = {p1,p2,p6};
-%pp = {p1};
+%pp = {p1,p2,p6};
 rr = {};
 rrs=[];
 for I=1:length(pp)
     p =pp{I};
     p.full=1;
     s=opomg.setup(p);
+    s.firstsol=false;
     if p.full == 1
         s.xpolicy = 'distinct';
         s.ypolicy = 'none';

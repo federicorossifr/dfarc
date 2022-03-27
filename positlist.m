@@ -5,9 +5,10 @@ if k > 2
      return;
 else
 switch(n)
-    case 2
+    case 3
         assert(k==0);
-        r=[0.5 1 2]';
+        r =[0.5 1 2]';
+        % NaR and 0
     case 4
         assert(k==0,'only k=0');
         r = posit4list();

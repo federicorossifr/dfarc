@@ -137,7 +137,15 @@ def main():
         pass
 
     solver = cp_model.CpSolver()
-
+    if "Lx1" in pa:
+        for var,value in zip(Lx1,pa["Lx1"]):
+            model.AddHint(var,value)
+    if not samex and "Lx2" in pa:
+        for var,value in zip(Lx2,pa["Lx2"]):
+            model.AddHint(var,value)
+    if "Ly" in pa:
+        for var,value in zip(Ly,pa["Ly"]):
+            model.AddHint(var,value)
 
     if not args.firstsol:        
         # monotonic problem and amin enforces only final term not all terms
@@ -173,6 +181,8 @@ def main():
             s["Lx1"] = [solver.Value(x) for x in Lx1]
             if not samex:
                 s["Lx2"] = [solver.Value(x) for x in Lx2]
+            else:
+                s["Lx2"] = s["Lx1"]
             s["Ly"] = [solver.Value(x) for x in Ly]
             s["negative"] = negative
             if negative:
@@ -185,6 +195,7 @@ def main():
             else:
                 print("Lx",s["Lx1"])                
             print("Ly",s["Ly"])
+            print("Max Values X1 X2 Y:",max(s["Lx1"]),max(s["Lx1"]),max(s["y"]))
             json.dump(s,open(args.output,"w"))
             print('Statistics')
             print('  - conflicts : %i' % solver.NumConflicts())
@@ -198,6 +209,8 @@ def main():
         vars = dict(Lx1=Lx1,Ly=Ly)
         if not samex:
             vars["Lx2"] = Lx2
+        else:
+            vars["Lx2"] = Lx1
         if negative:
             vars["Lq"] = LLq
         # Search and print out all solutions.
