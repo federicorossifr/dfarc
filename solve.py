@@ -40,6 +40,8 @@ def main():
     parser.add_argument('--ypolicy',choices=["distinct","mono","none"],default="none")
     parser.add_argument('--target',choices=["maxx","sum"],default="sum")
     parser.add_argument('--firstsol',action="store_true")
+    parser.add_argument('--time-limit',default=0,type=int,help="seconds, 0=infinite")
+    #parser.add_argument('--solution',default=-1,type=int,help="When stop: -1=optimal")
     parser.add_argument('--maxint','-M',type=int,help="Fix maximum of Lx and Ly, otherwise compute automatically")
     parser.add_argument('--minint','-m',type=int)
     args = parser.parse_args()
@@ -78,7 +80,7 @@ def main():
 
 
     print("nx1 %d nx2 %d ny %d nc %d " % (nx1,nx2,ny,nc))
-    print("problem mode name %s op %s xpolicy:%s ypolicy:%s commutative:%s negative:%s samex:%s first0:%s maxint:%d minint:%d eqgroups:%d target:%s firstsol:%s" %(pa["name"],pa["op"],args.xpolicy,args.ypolicy,commutative,negative,samex,args.first0,args.maxint,args.minint,len(eqgroups),args.target,args.firstsol))
+    print("problem mode name %s op %s xpolicy:%s ypolicy:%s commutative:%s negative:%s samex:%s first0:%s maxint:%d minint:%d eqgroups:%d target:%s firstsol:%s timelimit:%d" %(pa["name"],pa["op"],args.xpolicy,args.ypolicy,commutative,negative,samex,args.first0,args.maxint,args.minint,len(eqgroups),args.target,args.firstsol,args.time_limit))
     # add every sum, remember indices are 1-based
     if not negative: 
         for c in range(0,nc):
@@ -137,6 +139,8 @@ def main():
         pass
 
     solver = cp_model.CpSolver()
+    if args.time_limit != 0:
+        solver.parameters.max_time_in_seconds = args.time_limit
     if "Lx1" in pa:
         for var,value in zip(Lx1,pa["Lx1"]):
             model.AddHint(var,value)
@@ -175,7 +179,7 @@ def main():
         print("start solving")
         status = solver.Solve(model)
         print('Solve status: %s' % solver.StatusName(status))
-        if status == cp_model.OPTIMAL:
+        if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
             print('Optimal objective value: %i' % solver.ObjectiveValue())
             s=pa
             s["Lx1"] = [solver.Value(x) for x in Lx1]
@@ -195,7 +199,7 @@ def main():
             else:
                 print("Lx",s["Lx1"])                
             print("Ly",s["Ly"])
-            print("Max Values X1 X2 Y:",max(s["Lx1"]),max(s["Lx1"]),max(s["y"]))
+            print("Max Values X1 X2 Y:",max(s["Lx1"]),max(s["Lx2"]),max(s["Ly"]))
             json.dump(s,open(args.output,"w"))
             print('Statistics')
             print('  - conflicts : %i' % solver.NumConflicts())

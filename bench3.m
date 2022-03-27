@@ -7,24 +7,25 @@ n=3;
 pk=0;
 rname = sprintf('posit%d,%d',n,pk);
 lp = positlist(n,pk); % positive only
-l= [-lp ;0; lp]; % ful
+l= [-lp ;0; lp;NaN]; % ful
 lpg1 = lp(lp > 1);
 lpl1 = lp(lp < 1);
 lpn1 =lp(lp~=1);
 
-p1=opomg.create('+',lp);        
-p2=opomg.create('*',lp);
-p3=opomg.create('-',lp); % not
-p4=opomg.create('/',lp); % not
-p5=opomg.create('^',lp);% not
-%p5n=opomg.create('^',lpl1,lp);% not
-%p5.ename = '(x>1)';
-%p5n.ename = '(x<1)';
-p6=opomg.create('atan2',lp);% not
+lx1 = [-lp; 0;lp];
+lx2 = lx1;
+
+p1=opomg.create('*',lx1,lx2);
+p2=opomg.create('+',lx1,lx2);      
+p3=opomg.create('-',lx1,lx2); 
+p4=opomg.create('/',lx1,lx2); % full=1 not working if 0 lp
+p5=opomg.create('^',lx1,lx2);
+p6=opomg.create('atan2',lx1,lx2);
 
 pp = {p1,p2,p3,p4,p5,p6};
 %pp = {p1,p2,p6};
 %pp = {p1,p2,p6};
+%pp={p1};
 rr = {};
 rrs=[];
 for I=1:length(pp)
@@ -32,9 +33,11 @@ for I=1:length(pp)
     p.full=1;
     s=opomg.setup(p);
     s.firstsol=false;
+    s.timelimit = 240;
     if p.full == 1
         s.xpolicy = 'distinct';
         s.ypolicy = 'none';
+        
         s.target = "sum"; % sum
         s.samex=false;
         s.negative=false;
@@ -69,7 +72,7 @@ for I=1:length(pp)
     rs.nx = size(s.x1,1);
     rs.ny = size(s.y,1);
     rs.negative = s.negative;
-    rs.mono = s.mono;
+    rs.xppolicy = s.xpolicy;
     rs.full = s.full;
     rs.commutative = s.commutative;
     rs.samex = s.samex;
@@ -89,6 +92,7 @@ for I=1:length(pp)
     rs.elapsed = r.elapsed;
     rrs = [rrs; rs];
 end
+naivesize_y=(rs(1).nx-1)*rs(1).nx+(rs(1).nx-1)
 rrs = struct2table(rrs);
 'done'
 rrs

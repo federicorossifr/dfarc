@@ -79,7 +79,7 @@ switch(op)
         p.op = 'fx';
 end
 t = bsxfun(fx,l1,l2');
-
+t = real(t); 
 p.t = t;
 p.name = op;
 p.ename=name;

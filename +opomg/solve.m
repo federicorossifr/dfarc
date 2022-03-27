@@ -42,6 +42,9 @@ end
 if isfield(problem,'args') == 0
     problem.args = '';
 end
+if isfield(problem,'timelimit') == 0
+    problem.timelimit = 0;
+end
 if isfield(problem,'app') == 0
     problem.app = 'solve.py';
 end
@@ -68,12 +71,17 @@ if problem.firstsol
 else
     firstsol = '';
 end
+if problem.timelimit ~= 0
+    timelimit = sprintf('--time-limit %d',problem.timelimit);
+else
+    timelimit = '';
+end
 if ispc
-    cmd=sprintf('python %s "%s" %s %s %s %s %s --maxint %d -o "%s" --target %s %s',problem.app,fpp,problem.args,first0,xpolicy,ypolicy,minint,problem.maxint,fp,problem.target,firstsol);
+    cmd=sprintf('python %s "%s" %s %s %s %s %s --maxint %d -o "%s" --target %s %s %s',problem.app,fpp,problem.args,first0,xpolicy,ypolicy,minint,problem.maxint,fp,problem.target,firstsol,timelimit);
 system(cmd);
 else
     py='/Users/eruffaldi/venv/bin/python3';
- cmd=sprintf('env -i bash -l -c ''%s %s "%s" %s %s %s %s %s --maxint %d -o "%s" --target %s %s''',py,problem.app,fpp,problem.args,first0,xpolicy,ypolicy,minint,problem.maxint,fp,problem.target,firstsol);
+ cmd=sprintf('env -i bash -l -c ''%s %s "%s" %s %s %s %s %s --maxint %d -o "%s" --target %s %s %s''',py,problem.app,fpp,problem.args,first0,xpolicy,ypolicy,minint,problem.maxint,fp,problem.target,firstsol,timelimit);
 system(cmd);
 end
 e = toc;
