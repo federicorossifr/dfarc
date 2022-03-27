@@ -45,6 +45,12 @@ end
 if isfield(problem,'app') == 0
     problem.app = 'solve.py';
 end
+if isfield(problem,'target') == 0
+    problem.target = 'sum';
+end
+if isfield(problem,'firstsol') == 0
+    problem.firstsol = false;
+end
 if isfield(problem,'minint') == 0
     minint = '';
 else
@@ -57,13 +63,17 @@ end
 if isfield(problem,'maxint') == 0
     problem.maxint = 0;
 end
-
+if problem.firstsol
+    firstsol = '--firstsol';
+else
+    firstsol = '';
+end
 if ispc
-    cmd=sprintf('python %s "%s" %s %s %s %s %s --maxint %d -o "%s"',problem.app,fpp,problem.args,first0,xpolicy,ypolicy,minint,problem.maxint,fp);
+    cmd=sprintf('python %s "%s" %s %s %s %s %s --maxint %d -o "%s" --target %s %s',problem.app,fpp,problem.args,first0,xpolicy,ypolicy,minint,problem.maxint,fp,problem.target,firstsol);
 system(cmd);
 else
     py='/Users/eruffaldi/venv/bin/python3';
- cmd=sprintf('env -i bash -l -c ''%s %s "%s" %s %s %s %s %s --maxint %d -o "%s"''',py,problem.app,fpp,problem.args,first0,xpolicy,ypolicy,minint,problem.maxint,fp);
+ cmd=sprintf('env -i bash -l -c ''%s %s "%s" %s %s %s %s %s --maxint %d -o "%s" --target %s %s''',py,problem.app,fpp,problem.args,first0,xpolicy,ypolicy,minint,problem.maxint,fp,problem.target,firstsol);
 system(cmd);
 end
 e = toc;

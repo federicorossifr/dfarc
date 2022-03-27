@@ -22,6 +22,8 @@ p6=opomg.create('atan2',lp,[],rname,K);% not
 
 pp = {p1,p2,p3,p4,p5,p5n,p6};
 pp = {p1,p2,p3,p4}; %,p5,p5n,p6};
+p2.full=1;
+
 pp={p2};
 %pp={p4};
 %pp = {p1,p2};
@@ -30,6 +32,10 @@ rrs=[];
 for I=1:length(pp)
     p =pp{I};
     s=opomg.setup(p);
+    s.xpolicy = 'mono';
+    s.ypolicy = 'none';
+    s.target = "maxx"; % sum
+    s.samex=false;
     %s.args = '--firstsol';
     %s.app='solve0.py';
 %     
@@ -42,6 +48,7 @@ for I=1:length(pp)
 %         s.samex = false;
 %         s.mono=false;
 %     end
+
     if iscell(s) == 0
         s={s};
     end

@@ -44,5 +44,20 @@ if sol.negative
 else
     w = all(sol.Ly(sol.b) == sol.Lx1(sol.p(:,1)) + sol.Lx2(sol.p(:,2)));
 end
+if ~isempty(sol.eqgroups)
+    bb=true;
+    for I=1:max(sol.eqgroups)
+        same = sol.Ly(sol.eqgroups == I);
+        notsame = sol.Ly(sol.eqgroups ~= I);
+        for J=1:length(same)
+            if any(same(J) == notsame)
+                bb=false;
+                break;
+            end
+        end
+    end
+else
+    bb=true;
+end
 r = sol;
-r.verified = all(w);
+r.verified = all(w) & bb;

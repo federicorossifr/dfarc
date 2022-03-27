@@ -24,6 +24,9 @@ p6=opomg.create('atan2',lp);% not
 
 pp = {p1,p2,p3,p4,p5,p5n,p6};
 pp = {p1,p2,p3,p4}; %,p5,p5n,p6};
+p2.full=1;
+p2.xpolicy = 'mono';
+p2.ypolicy = 'none';
 pp={p2};
 %pp = {p1,p2};
 rr = {};
@@ -31,6 +34,7 @@ rrs=[];
 for I=1:length(pp)
     p =pp{I};
     s=opomg.setup(p);
+    s.samex=false;
     %s.args = '--firstsol';
     %s.app='solve0.py';
     if s.op =='/'
@@ -45,7 +49,6 @@ for I=1:length(pp)
         s.samex = false;
         s.mono=false;
     end
-    s.samex=false; % important
 
     r=opomg.solve(s);  
     % use solvenaive

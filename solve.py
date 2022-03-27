@@ -13,15 +13,16 @@ import sys
 class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
     """Print intermediate solutions."""
 
-    def __init__(self, variables):
+    def __init__(self, out, variables):
         cp_model.CpSolverSolutionCallback.__init__(self)
         self.__variables = variables
         self.__solution_count = 0
+        self.output = out
 
     def on_solution_callback(self):
         self.__solution_count += 1
-        for v in self.__variables:
-            print('%s=%i' % (v, self.Value(v)), end=' ')
+        for k,vars in self.__variables.items():
+            self.output[k] = [self.Value(var) for var in vars]
         self.StopSearch()
 
     def solution_count(self):
@@ -37,7 +38,7 @@ def main():
     parser.add_argument('--first0',action="store_true",help="Enforce that first Lx and first Ly are ZERO")
     parser.add_argument('--xpolicy',choices=["distinct","mono","none"],default="none")
     parser.add_argument('--ypolicy',choices=["distinct","mono","none"],default="none")
-    parser.add_argument('--amin',action="store_true")
+    parser.add_argument('--target',choices=["maxx","sum"],default="sum")
     parser.add_argument('--firstsol',action="store_true")
     parser.add_argument('--maxint','-M',type=int,help="Fix maximum of Lx and Ly, otherwise compute automatically")
     parser.add_argument('--minint','-m',type=int)
@@ -56,6 +57,7 @@ def main():
     ny = pa["ny"]
     nx1 = pa["nx1"]
     nx2 = pa["nx2"]
+    eqgroups = pa.get("eqgroups",[])
     samex = pa["samex"] # enforce same Lx1=Lx2
     negative = pa.get("negative",False) # allow negative solutions 
     commutative = pa["commutative"] != 0 # NO EFFECT
@@ -73,8 +75,10 @@ def main():
     else:
         Lx2 = [model.NewIntVar(args.minint, args.maxint, 'Lx2%d'%(i+1)) for i in range(0,nx2)]
     Ly = [model.NewIntVar(args.minint, args.maxint, 'Ly%d'%(i+1)) for i in range(0,ny)]
+
+
     print("nx1 %d nx2 %d ny %d nc %d " % (nx1,nx2,ny,nc))
-    print("problem mode name %s op %s xpolicy:%s ypolicy:%s commutative:%s negative:%s samex:%s first0:%s maxint:%d minint:%d" %(pa["name"],pa["op"],args.xpolicy,args.ypolicy,commutative,negative,samex,args.first0,args.maxint,args.minint))
+    print("problem mode name %s op %s xpolicy:%s ypolicy:%s commutative:%s negative:%s samex:%s first0:%s maxint:%d minint:%d eqgroups:%d target:%s firstsol:%s" %(pa["name"],pa["op"],args.xpolicy,args.ypolicy,commutative,negative,samex,args.first0,args.maxint,args.minint,len(eqgroups),args.target,args.firstsol))
     # add every sum, remember indices are 1-based
     if not negative: 
         for c in range(0,nc):
@@ -103,6 +107,22 @@ def main():
         if not samex:
             model.AddAllDifferent(Lx2)
 
+    if len(eqgroups) != 0:
+        eqgroupsT = max(eqgroups) # 1..N
+        for i in range(1,eqgroupsT+1): # each group 
+            # split 
+            same_i = []
+            notsame_i = []
+            for j,k in enumerate(eqgroups):
+                if k == i:
+                    same_i.append(j)
+                else:
+                    notsame_i.append(j)
+            for y1 in same_i:
+                for y2 in notsame_i:
+                    model.Add(Ly[y1] != Ly[y2])
+
+
     # lowest shall be zero
     if args.first0:
         model.Add(Ly[0] == 0)
@@ -118,38 +138,33 @@ def main():
 
     solver = cp_model.CpSolver()
 
-    if not args.firstsol:
-        # iminimze sum of positive values
-        s = sum(Ly)+sum(Lx1)+(0 if len(LLq) == 0 else sum(LLq))
-        if not samex:
-            s = s + sum(Lx2)
 
-        # special case for negative
-        if args.minint < 0:
-            n = len(Ly)+len(Lx1)
+    if not args.firstsol:        
+        # monotonic problem and amin enforces only final term not all terms
+        if args.target == "maxx":
             if not samex:
-                n = n +len(Lx2)
-            help = model.NewIntVar(args.minint*n,args.maxint*n,"H")
-            if args.amin:
+                z =  Lx2[-1]
+            else:
+                z = 0
+            s = Lx1[-1]+z
+        else:
+            # iminimze sum of positive values
+            s = sum(Ly)+sum(Lx1)+(0 if len(LLq) == 0 else sum(LLq))
+            if not samex:
+                s = s + sum(Lx2)
+            if args.minint < 0:
+                n = len(Ly)+len(Lx1)
+                if not samex:
+                    n = n +len(Lx2)
+                help = model.NewIntVar(args.minint*n,args.maxint*n,"H")
                 model.Add(s <= help)
                 model.Add(-s <= help)
-                model.Minimize(help)
-            else:                
-                if not samex:
-                    z =  Lx2[-1]
-                else:
-                    z = 0
-                model.Minimize(Ly[-1]+Lx1[-1]+z)
-        else:
-            # monotonic problem and amin enforces only final term not all terms
-            if args.amin and args.xpolicy == "mono" and args.ypolicy == "mono":
-                if not samex:
-                    z =  Lx2[-1]
-                else:
-                    z = 0
-                model.Minimize(Ly[-1]+Lx1[-1]+z)
+                s = help
             else:
-                model.Minimize(s)
+                pass
+        model.Minimize(s)
+
+        print("start solving")
         status = solver.Solve(model)
         print('Solve status: %s' % solver.StatusName(status))
         if status == cp_model.OPTIMAL:
@@ -171,17 +186,29 @@ def main():
                 print("Lx",s["Lx1"])                
             print("Ly",s["Ly"])
             json.dump(s,open(args.output,"w"))
-        print('Statistics')
-        print('  - conflicts : %i' % solver.NumConflicts())
-        print('  - branches  : %i' % solver.NumBranches())
-        print('  - wall time : %f s' % solver.WallTime())        
-    else:
-        # Force the solver to follow the decision strategy exactly.
-        #solver.parameters.search_branching = cp_model.FIXED_SEARCH
+            print('Statistics')
+            print('  - conflicts : %i' % solver.NumConflicts())
+            print('  - branches  : %i' % solver.NumBranches())
+            print('  - wall time : %f s' % solver.WallTime())       
 
+    else:
+        s = pa
+        s["negative"] = negative
+        s["Lq"] = 0        
+        vars = dict(Lx1=Lx1,Ly=Ly)
+        if not samex:
+            vars["Lx2"] = Lx2
+        if negative:
+            vars["Lq"] = LLq
         # Search and print out all solutions.
-        solution_printer = VarArraySolutionPrinter(Lx1+Lx2+Ly+LLq) # skip L0 0
+        print("start solving first")  
+        solution_printer = VarArraySolutionPrinter(s,vars) # skip L0 0
         solver.SearchForAllSolutions(model, solution_printer)
+        if solution_printer.solution_count != 0:
+            # solutions already written in Lx1, Lx2, Ly Lq of the variable s if found
+            json.dump(s,open(args.output,"w"))
+
+
 
 if __name__ == '__main__':
     main()

@@ -27,6 +27,7 @@ assert(all(diff(x2)) > 0); % ordered
 
 x1b = itx1;
 x2b = itx2;
+[y,~,ity] = unique(t); % totals, andt the map from every matrix element to eacy y
 
 if pp.full
     c = length(x1)*length(x2); 
@@ -43,13 +44,13 @@ if pp.full
             y(q) = t(I,J);
         end
     end        
+    eqgroups = ity;
     b = b(1:q,:);
     p = p(1:q,:);
     ny = length(b);
     hasidentity = 1;
 else
     %commutative = commutative && length(l1) == length(l2);
-    [y,~,ity] = unique(t); % totals, andt the map from every matrix element to eacy y
     assert(all(diff(y)) > 0); % ordered  
     ny = length(y);
 
@@ -142,6 +143,7 @@ else
     %A = A(1:q,:);
     b = b(1:q,:);
     p = p(1:q,:);
+    eqgroups = []; % all distinct
 end
 
 %assert(all(sum(A,2) ==2))
@@ -157,6 +159,7 @@ problem.op = op;
 %problem.zero = zz; % index of null
 problem.p = p; % shorter
 problem.b= b;
+problem.eqgroups = eqgroups;
 problem.commutative = commutative;
 problem.samex = nx1 == nx2 && all(l1 == l2); % very important hint
 problem.x1 = x1;
@@ -178,6 +181,7 @@ end
 problem.mono = mono; %modify before call solvee
 problem.hasidentity = hasidentity; % NOT used by solver 
 problem.name = name;
+problem.full = pp.full;
 problem.type = 'omgproblem';
 if isfield(pp,'negative')
     problem.negative = pp.negative;
