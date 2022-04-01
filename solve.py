@@ -36,8 +36,8 @@ def main():
     parser.add_argument('--output','-o',default="solution.json")
     #parser.add_argument('output')
     parser.add_argument('--first0',action="store_true",help="Enforce that first Lx and first Ly are ZERO")
-    parser.add_argument('--xpolicy',choices=["distinct","mono","none"],default="none")
-    parser.add_argument('--ypolicy',choices=["distinct","mono","none"],default="none")
+    parser.add_argument('--xpolicy',choices=["distinct","mono","monodec","none"],default="none")
+    parser.add_argument('--ypolicy',choices=["distinct","mono","monodec","none"],default="none")
     parser.add_argument('--target',choices=["maxx","sum"],default="sum")
     parser.add_argument('--firstsol',action="store_true")
     parser.add_argument('--time-limit',default=0,type=int,help="seconds, 0=infinite")
@@ -47,6 +47,8 @@ def main():
     args = parser.parse_args()
 
     model = cp_model.CpModel()
+    print("Model======")
+    print(model)    
     solver = cp_model.CpSolver()
 
 
@@ -104,6 +106,14 @@ def main():
             for i in range(1,nx2):
                 # others shall be greater than previous
                 model.Add(Lx2[i] > Lx2[i-1])
+    elif args.xpolicy == "monodec":
+        for i in range(1,nx1):
+            # others shall be greater than previous
+            model.Add(Lx1[i] < Lx1[i-1])
+        if not samex:
+            for i in range(1,nx2):
+                # others shall be greater than previous
+                model.Add(Lx2[i] < Lx2[i-1])            
     elif args.xpolicy == "distinct":
         model.AddAllDifferent(Lx1)
         if not samex:
@@ -199,7 +209,16 @@ def main():
             else:
                 print("Lx",s["Lx1"])                
             print("Ly",s["Ly"])
-            print("Max Values X1 X2 Y:",max(s["Lx1"]),max(s["Lx2"]),max(s["Ly"]))
+            unique_ly = set(s["Ly"]);
+            print("uLy",unique_ly);             
+            print("Max Values X1 X2 Y:",max(s["Lx1"]),max(s["Lx2"]),max(s["Ly"]));
+            
+            
+            unique_entries = len(set(s["Ly"]));
+            naive_entries = len(s["Lx1"])**2
+            print("Naive LUT entries:", naive_entries);
+            print("Unique LUT entries:", unique_entries);
+            print("% saved:", (naive_entries-unique_entries)/naive_entries);
             json.dump(s,open(args.output,"w"))
             print('Statistics')
             print('  - conflicts : %i' % solver.NumConflicts())
@@ -229,3 +248,7 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+
+
+
