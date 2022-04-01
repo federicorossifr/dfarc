@@ -107,13 +107,13 @@ def main():
                 # others shall be greater than previous
                 model.Add(Lx2[i] > Lx2[i-1])
     elif args.xpolicy == "monodec":
-        for i in range(1,nx1):
+        for i in range(0,nx1-1):
             # others shall be greater than previous
-            model.Add(Lx1[i] < Lx1[i-1])
+            model.Add(Lx1[i] < Lx1[i+1])
         if not samex:
-            for i in range(1,nx2):
+            for i in range(0,nx2-1):
                 # others shall be greater than previous
-                model.Add(Lx2[i] < Lx2[i-1])            
+                model.Add(Lx2[i] < Lx2[i+1])            
     elif args.xpolicy == "distinct":
         model.AddAllDifferent(Lx1)
         if not samex:
@@ -143,6 +143,10 @@ def main():
         for i in range(1,ny):
             # others shall be greater than previous
             model.Add(Ly[i] > Ly[i-1])
+    elif args.ypolicy == "monodec":
+        for i in range(0,ny+1):
+            # others shall be greater than previous
+            model.Add(Ly[i] < Ly[i+1])
     elif args.ypolicy == "distinct":
         model.AddAllDifferent(Ly)
     else:
