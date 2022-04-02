@@ -1,5 +1,4 @@
 import ortools
-print(ortools.__version__) 
 from ortools.linear_solver import pywraplp
 from ortools.sat.python import cp_model
 
@@ -9,6 +8,7 @@ import os
 import sys
 
 
+__version__ = "0.9.0"
 
 class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
     """Print intermediate solutions."""
@@ -31,30 +31,31 @@ class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('input')
-    parser.add_argument('--output','-o',default="solution.json")
-    #parser.add_argument('output')
+    parser = argparse.ArgumentParser(description='Function LUT Solver')
+    parser.add_argument('input',help="input problem file as JSON")
+    parser.add_argument('--output','-o',default="output solution file as JSON")
     parser.add_argument('--first0',action="store_true",help="Enforce that first Lx and first Ly are ZERO")
-    parser.add_argument('--xpolicy',choices=["distinct","mono","monodec","none"],default="none")
-    parser.add_argument('--ypolicy',choices=["distinct","mono","monodec","none"],default="none")
-    parser.add_argument('--target',choices=["maxx","sum"],default="sum")
-    parser.add_argument('--firstsol',action="store_true")
-    parser.add_argument('--time-limit',default=0,type=int,help="seconds, 0=infinite")
+    parser.add_argument('--xpolicy',choices=["distinct","mono","monodec","none"],default="none",help="policy for Lx1 and Lx2")
+    parser.add_argument('--ypolicy',choices=["distinct","mono","monodec","none"],default="none",help="policy for Ly")
+    parser.add_argument('--target',choices=["maxx","sum","firstsol"],default="sum",help="target optimization function")
+    parser.add_argument('--time-limit',default=0,type=int,help="time limit before stopping solver. 0=infinite can be interrupted by CLTR+C")
     #parser.add_argument('--solution',default=-1,type=int,help="When stop: -1=optimal")
     parser.add_argument('--maxint','-M',type=int,help="Fix maximum of Lx and Ly, otherwise compute automatically")
-    parser.add_argument('--minint','-m',type=int)
+    parser.add_argument('--minint','-m',type=int,help="Minimum value of Lx and Ly, otherwise zero")
+    parser.add_argument('--print-model',action="store_true",help="Print only model")
+    parser.add_argument('--version','-v',action="store_true")
     args = parser.parse_args()
 
-    model = cp_model.CpModel()
-    print("Model======")
-    print(model)    
-    solver = cp_model.CpSolver()
+    if args.version:    
+        print("This tool:",__version__)
+        print("ORTools:",ortools.__version__) 
+        return
+
 
 
 
     pa = json.load(open(args.input,"r"))
-    print("problem %s" % pa["name"])
+    print("problem %s" % pa["name"],file=sys.stderr)
     #A = pa["A"]
     b = pa["b"]
     p = pa["p"]
@@ -73,6 +74,11 @@ def main():
         args.minint = 0
     if args.maxint is None or args.maxint == 0:
         args.maxint = (nx1+1)*(nx2+1) # if pa["op"] != "/" else -args.maxint
+
+
+    # Model HERE
+    model = cp_model.CpModel()
+
     Lx1 = [model.NewIntVar(args.minint, args.maxint, 'Lx1%d'%(i+1)) for i in range(0,nx1)]
     if samex:
         Lx2 = Lx1
@@ -80,9 +86,8 @@ def main():
         Lx2 = [model.NewIntVar(args.minint, args.maxint, 'Lx2%d'%(i+1)) for i in range(0,nx2)]
     Ly = [model.NewIntVar(args.minint, args.maxint, 'Ly%d'%(i+1)) for i in range(0,ny)]
 
-
-    print("nx1 %d nx2 %d ny %d nc %d " % (nx1,nx2,ny,nc))
-    print("problem mode name %s op %s xpolicy:%s ypolicy:%s commutative:%s negative:%s samex:%s first0:%s maxint:%d minint:%d eqgroups:%d target:%s firstsol:%s timelimit:%d" %(pa["name"],pa["op"],args.xpolicy,args.ypolicy,commutative,negative,samex,args.first0,args.maxint,args.minint,len(eqgroups),args.target,args.firstsol,args.time_limit))
+    print("nx1 %d nx2 %d ny %d nc %d " % (nx1,nx2,ny,nc),file=sys.stderr)
+    print("problem mode name %s op %s xpolicy:%s ypolicy:%s commutative:%s negative:%s samex:%s first0:%s maxint:%d minint:%d eqgroups:%d target:%s timelimit:%d" %(pa["name"],pa["op"],args.xpolicy,args.ypolicy,commutative,negative,samex,args.first0,args.maxint,args.minint,len(eqgroups),args.target,args.time_limit),file=sys.stderr)
     # add every sum, remember indices are 1-based
     if not negative: 
         for c in range(0,nc):
@@ -152,9 +157,7 @@ def main():
     else:
         pass
 
-    solver = cp_model.CpSolver()
-    if args.time_limit != 0:
-        solver.parameters.max_time_in_seconds = args.time_limit
+
     if "Lx1" in pa:
         for var,value in zip(Lx1,pa["Lx1"]):
             model.AddHint(var,value)
@@ -165,7 +168,16 @@ def main():
         for var,value in zip(Ly,pa["Ly"]):
             model.AddHint(var,value)
 
-    if not args.firstsol:        
+    if args.print_model:
+        print(model)    
+        return
+
+    solver = cp_model.CpSolver()
+
+    if args.time_limit != 0:
+        solver.parameters.max_time_in_seconds = args.time_limit
+
+    if args.target != "firstsol":        
         # monotonic problem and amin enforces only final term not all terms
         if args.target == "maxx":
             if not samex:
@@ -190,11 +202,11 @@ def main():
                 pass
         model.Minimize(s)
 
-        print("start solving")
+        print("start solving",file=sys.stderr)
         status = solver.Solve(model)
-        print('Solve status: %s' % solver.StatusName(status))
+        print('Solve status: %s' % solver.StatusName(status),file=sys.stderr)
         if status == cp_model.OPTIMAL or status == cp_model.FEASIBLE:
-            print('Optimal objective value: %i' % solver.ObjectiveValue())
+            print('Optimal objective value: %i' % solver.ObjectiveValue(),file=sys.stderr)
             s=pa
             s["Lx1"] = [solver.Value(x) for x in Lx1]
             if not samex:
