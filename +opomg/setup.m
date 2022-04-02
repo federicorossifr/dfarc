@@ -44,7 +44,7 @@ if pp.full
     Lx2 = (0:length(x2)-1)*length(x1); % #X1..(#X1 #X2-1)
     for I=1:length(l1)
         for J=1:length(l2)
-            k = sub2ind(size(t),I,J);
+            
             q = q + 1;
             p(q,:)= [x1b(I),x2b(J)]; % also for combinations in Lx
             b(q) = q;

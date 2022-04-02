@@ -223,15 +223,34 @@ def main():
                 print("Lx1",s["Lx1"])
                 print("Lx2",s["Lx2"])
             else:
-                print("Lx",s["Lx1"])                
-            print("Ly",s["Ly"])
+                print("Lx",s["Lx1"])              
+
             unique_ly = set(s["Ly"]);
+            unuque_lyd = dict([(u,i) for i,u in enumerate(s["Ly"])]) # from unique Ly to one example of the equivalence group
+            max_y = max(s["Ly"])
+            min_y = min(s["Ly"])
+
+            print("Max Values X1 X2 minY maxY:",max(s["Lx1"]),max(s["Lx2"]),min_y,max_y);
+            print("Ly",s["Ly"])
             print("uLy",unique_ly);             
-            print("Max Values X1 X2 Y:",max(s["Lx1"]),max(s["Lx2"]),max(s["Ly"]));
+            
+            if len(eqgroups) != 0:
+                # in this case we want to explicitly descript the mapping between range uLy aka min("Ly")..max("Ly") to values
+                map_uLy_to_target = [0 for x in range(0,len(unique_ly))]
+                for j,uLy in enumerate(sorted(unique_ly)):
+                    idx = unuque_lyd[uLy] # index of example input (all equivalent as real value value)
+                    map_uLy_to_target[j] = s["y"][idx]
+                s["uLy2y"] = map_uLy_to_target
+                print("uLy2y",map_uLy_to_target)
+            else:
+                # each Ly corresponds to y
+                s["uLy2y"] = []
+
             
             
             unique_entries = len(set(s["Ly"]));
-            naive_entries = len(s["Lx1"])**2
+            naive_entries = len(s["Lx1"])*len(s["Lx2"])
+
             print("Naive LUT entries:", naive_entries);
             print("Unique LUT entries:", unique_entries);
             print("% saved:", (naive_entries-unique_entries)/naive_entries);

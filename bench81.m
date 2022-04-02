@@ -13,7 +13,7 @@ lpg1 = lp(lp > 1);
 lpl1 = lp(lp < 1);
 lpn1 =lp(lp~=1);
 
-p2=opomg.create('*',l,[],l);
+p2=opomg.create('*',lpz,[],lpz);
 p1=opomg.create('+',l,[],l);
 p3=opomg.create('-',l,[],l); % not
 p4=opomg.create('/',l,[],l); % not
