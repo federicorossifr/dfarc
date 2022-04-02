@@ -86,33 +86,39 @@ end
 t = bsxfun(fx,l1,l2');
 t = real(t); 
 if isempty(lz) == 0
-    tw = t(:);
-    idzero = find(lz==0,1,'first');        
-    [reo,ui,uii] = unique(tw);
+    tw = t(:); % values of the operation
+    idzero = find(lz==0,1,'first');     % where is Zero?   
+    idnan = find(isnan(lz)); % where is nan?
+    lzi = 1:length(lz); % all indices
     if isempty(idzero) == 0
-        lzz = lz(lz ~= 0);
-        lzi = setdiff(1:length(lz),idzero(1));
-    else
-        lzz = lz;
-        lzi = 1:length(lz);
+        lzi = setdiff(lzi,idzero(1)); % remove zero
     end
-    reo_to_z= zeros(length(reo),1);
+    if isempty(idnan) == 0
+        lzi = setdiff(lzi,idnan); % remove nan indices
+    end
+    lzz = lz(lzi); % these are output values for the comparison
+    
+    [reo,~,uii] = unique(tw); % identify unique values, and their mapping to tw
+    reo_to_z= ones(length(reo),1); % prepare output (1 for ignarble)
+    
+    % could optimize this
     for I=1:length(reo)
-        if isempty(idzero) == 0% has zero
-            if reo(I) == 0 
-                reo_to_z(I) = idzero(1);
-            else
-                [~,zi]=min(abs(reo(I)-lzz)); % nearest except zero
-                reo_to_z(I) = lzi(zi);       % new indixex in lz
-            end
-        else            
-            [~,zi]=min(abs(reo(I)-lz));
-            reo_to_z(I) = zi;       % new indixex in lz
-        end
+        [~,zi]=min(abs(reo(I)-lzz)); % nearest in good group
+        reo_to_z(I) = zi;       % value 
     end
+    
     % then map every 
-    tw = reo_to_z(uii); % original index to new index in lz
-    t = reshape(tw,size(t));
+    two = lzz(reo_to_z(uii)); % original index to new index in lz
+    
+    % replace zeros
+    if isempty(idzero) == 0
+        two(tw == 0) = 0;
+    end
+    if isempty(idnan) == 0
+        two(isnan(tw)) = nan;
+    end
+    
+    t = reshape(two,size(t));
 end
 p.t = t;
 p.name = op;

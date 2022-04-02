@@ -7,7 +7,8 @@ n=3;
 pk=0;
 rname = sprintf('posit%d,%d',n,pk);
 lp = positlist(n,pk); % positive only
-l= sort([-lp ;0; lp]); % ful
+l= sort([-lp ;0; lp; NaN]); % ful
+lpz = l(l>=0);
 lpg1 = lp(lp > 1);
 lpl1 = lp(lp < 1);
 lpn1 =lp(lp~=1);
