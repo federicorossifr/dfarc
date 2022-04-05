@@ -46,47 +46,46 @@ for I=1:length(pp)
         s={s};
     end
     r=opomg.solve(s);
-    if iscell(r) == 0
-        r={r};
-    end
-    v=opomg.verify(r);
-    if iscell(v) == 0
-        v={v};
-    end
-    vv=v;
-    ss=s;
-    rr=r;
-    for J=1:length(vv)
-        s=ss{J};
-        v=vv{J};
-        r=rr{J};
-        rr{end+1}= v;
-        rs = struct();
-        rs.name = rname;
-        if isfield(p,'ename')
-            rs.name =[rs.name  ' ' p.ename];
-        end
-        rs.op = s.op;
-        rs.app=s.app;
-        rs.solved = v.solved;
-        rs.verified = v.verified;
-        rs.nx = size(s.x1,1);
-        rs.ny = size(s.y,1);
-        rs.negative = s.negative;
-        rs.mono = s.mono;
-        rs.commutative = s.commutative;
-        rs.samex = s.samex;
-        if v.solved 
-            rs.maxLx = max(r.Lx1);
-            rs.maxLy = max(r.Ly);
-        else
-            rs.maxLx = 0;
-            rs.maxLy = 0;        
-        end       
-        rs.elapsed = r.elapsed;
-        rrs = [rrs; rs];
-    end
+%     if iscell(r) == 0
+%         r={r};
+%     end
+%     v=opomg.verify(r);
+%     if iscell(v) == 0
+%         v={v};
+%     end
+%     vv=v;
+%     ss=s;
+%     rr=r;
+%     for J=1:length(vv)
+%         s=ss{J};
+%         v=vv{J};
+%         r=rr{J};
+%         rr{end+1}= v;
+%         rs = struct();
+%         rs.name = rname;
+%         if isfield(p,'ename')
+%             rs.name =[rs.name  ' ' p.ename];
+%         end
+%         rs.op = s.op;
+%         rs.app=s.app;
+%         rs.solved = v.solved;
+%         rs.verified = v.verified;
+%         rs.nx = size(s.x1,1);
+%         rs.ny = size(s.y,1);
+%         rs.negative = s.negative;
+%         rs.mono = s.mono;
+%         rs.commutative = s.commutative;
+%         rs.samex = s.samex;
+%         if v.solved 
+%             rs.maxLx = max(r.Lx1);
+%             rs.maxLy = max(r.Ly);
+%         else
+%             rs.maxLx = 0;
+%             rs.maxLy = 0;        
+%         end       
+%         rs.elapsed = r.elapsed;
+%         rrs = [rrs; rs];
 end
-rrs = struct2table(rrs);
+rrs = []
 'done'
 rrs

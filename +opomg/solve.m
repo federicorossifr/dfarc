@@ -9,11 +9,11 @@ if iscell(problem)
 end
 
 problem.fx = [];
-fpp = 'problem.json';
+fpp = strcat(problem.name,'.json');
 f = fopen(fpp,'w');
 fwrite(f,jsonencode(problem));
 fclose(f);
-fp = 'result.json';
+fp = strcat(problem.name,'_result.json');
 if exist(fp,'file')
     delete(fp,'file');
 end
@@ -80,8 +80,11 @@ if ispc
     cmd=sprintf('python %s "%s" %s %s %s %s %s --maxint %d -o "%s" --target %s %s %s',problem.app,fpp,problem.args,first0,xpolicy,ypolicy,minint,problem.maxint,fp,problem.target,firstsol,timelimit);
 system(cmd);
 else
-    py='/Users/eruffaldi/venv/bin/python3';
+    py='python3';
  cmd=sprintf('env -i bash -l -c ''%s %s "%s" %s %s %s %s %s --maxint %d -o "%s" --target %s %s %s''',py,problem.app,fpp,problem.args,first0,xpolicy,ypolicy,minint,problem.maxint,fp,problem.target,firstsol,timelimit);
+cmd
+r = []
+return;
 system(cmd);
 end
 e = toc;

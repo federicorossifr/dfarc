@@ -8,7 +8,7 @@ pk=2;
 K=0; % for splitting?
 rname = sprintf('posit%d,%d',n,pk);
 lp = positlist(n,pk); % positive only
-l= [-lp ;0; lp]; % ful
+l= [lp]; % ful
 lpg1 = lp(lp > 1);
 lpl1 = lp(lp < 1);
 lpn1 =lp(lp~=1);

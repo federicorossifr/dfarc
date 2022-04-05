@@ -99,17 +99,22 @@ if isempty(lz) == 0
     lzz = lz(lzi); % these are output values for the comparison
     
     [reo,~,uii] = unique(tw); % identify unique values, and their mapping to tw
+
+
     reo_to_z= ones(length(reo),1); % prepare output (1 for ignarble)
     
+
     % could optimize this
     for I=1:length(reo)
         [~,zi]=min(abs(reo(I)-lzz)); % nearest in good group
+        
         reo_to_z(I) = zi;       % value 
     end
-    
     % then map every 
     two = lzz(reo_to_z(uii)); % original index to new index in lz
     
+    
+
     % replace zeros
     if isempty(idzero) == 0
         two(tw == 0) = 0;
@@ -119,9 +124,15 @@ if isempty(lz) == 0
     end
     
     t = reshape(two,size(t));
+
+    
 end
 p.t = t;
-p.name = op;
+if nargin < 5
+    p.name = op;
+else
+    p.name = name
+end
 p.ename=name;
 p.commutative=commutative;
 

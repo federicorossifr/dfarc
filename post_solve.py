@@ -48,7 +48,7 @@ def genBoolExpr(outputs,nbits, varname, outbits = -1):
 def genLzBoolExpr(x,nbits,uLy,uLy2y):
     lzMap = genLzTable(x,uLy,uLy2y)
     orderedLzMap = OrderedDict(sorted(lzMap.items()))
-    return genBoolExpr(lzMap,nbits+1,"z",nbits)
+    return genBoolExpr(lzMap,((nbits - 1)*2),"z",nbits)
     
 
 def genLzTable(x,uLy,uLy2y):
@@ -78,7 +78,8 @@ def main():
     m2,mx2 = genBoolExpr(Lx2,int(args.bits),"y")
     m3,mx3 = genLzBoolExpr(x,int(args.bits),uLy,uLy2y)
 
-    printRecap(x,y,Lx1,Lx2,Ly,uLy,uLy2y,m1,m2,m3,mx1,mx2,mx3)
+    #printRecap(x,y,Lx1,Lx2,Ly,uLy,uLy2y,m1,m2,m3,mx1,mx2,mx3,int(args.bits))
+    printFinalOpListing(x,Lx1,Lx2,uLy,uLy2y,solution['op'])
 
 
 
@@ -86,14 +87,56 @@ def printTruthTab(mx,outbits):
     for i,x in enumerate(mx):
         print('{0:0{1}b}'.format(i,outbits),"\t",''.join(list(mx[i])))
 
+def printZTruthTab(mx,outbits, x,Lx1,Lx2,uLy,uLy2y):
+    for i,x__ in enumerate(mx):
+        try:
+            x_ = x[int(''.join(list(mx[i])),2)]
+        except:
+            x_ = "-"
+            print("",end="")
+        print('{0:0{1}b}'.format(i,outbits),"\t",
+                ''.join(list(mx[i])),"\t",
+                x_
+                
+            )    
+
 def countGates(boolExpr):
     andGates = len(re.findall("And", boolExpr))
     orGates  = len(re.findall("Or",  boolExpr))
     return andGates + orGates
 
+def printFinalOpListing(x,Lx1,Lx2,uLy,uLy2y,op):
+    print("\n===============")
+    print("x: ",x)
+    print("Lx: ",Lx1)
+    print("Ly: ",Lx2)
+    print("Lz:", uLy)
+    print("Lz2z:", uLy2y)
+    print("")
+    for i,lx in enumerate(Lx1):
+        for j,ly in enumerate(Lx2):
+            zindex = Lx1[i]+Lx2[j]
+            print(x[i],op,x[j])
+            print(Lx1[i],"+",Lx2[j],"=",zindex)
+            print("Lz[",zindex,"] = ",uLy2y[uLy.index(zindex)])
+            print("-----------------")
+
+def printOpTable(x,Lx1,Lx2,uLy,uLy2y):
+
+    print("",end="\t")
+    for x_ in x:
+        print(x_,end="\t")
+    print("\n")
+    for i,lx in enumerate(Lx1):
+        print(x[i],end="\t")
+        for j,ly in enumerate(Lx2):
+            zindex = Lx1[i]+Lx2[j]
+            print(uLy2y[uLy.index(zindex)],end="\t")
+        print("")
+
 # We will use paper nomenclature here
 # x1 => x; x2 => y; y => z
-def printRecap(x,y,Lx1,Lx2,Ly,uLy,uLy2y,m1,m2,m3,mx1,mx2,mx3):
+def printRecap(x,y,Lx1,Lx2,Ly,uLy,uLy2y,m1,m2,m3,mx1,mx2,mx3,inbits):
     print("\n===============\n")
     print("POSIT DOMAIN")
     print("Operands (x,y):")
@@ -108,14 +151,26 @@ def printRecap(x,y,Lx1,Lx2,Ly,uLy,uLy2y,m1,m2,m3,mx1,mx2,mx3):
     print(x,"=>",Lx2,"\n")
 
     print("Lx+Ly: ")
-    print("\t","\t".join(map(str,Lx1)))
+    print("\t","\t".join(map(str,Lx2)))
     print("")
-    for i,l in enumerate(np.reshape(Ly,[4, 4])):
-        print(Lx2[i],"\t","\t".join(map(str,list(l))))
+    for i,l in enumerate(np.reshape(Ly,[len(Lx1), len(Lx2)])):
+        print(Lx1[i],"\t","\t".join(map(str,list(l))))
     
-    print("\nLz => z [uniques only]")
-    print(uLy,"=>",uLy2y,"\n")
+    print("\nLz[Lx+Ly]:\n")
 
+    printOpTable(x,Lx1,Lx2,uLy,uLy2y)
+    printFinalOpListing(x,Lx1,Lx2,uLy,uLy2y,"*")
+
+
+    print("\nLz => z [uniques only]")
+    print(uLy,"=> ",end="")
+    print("[",end="")
+    for i,ly_ in enumerate(uLy):
+        print(uLy2y[i],end="")
+        if i < len(uLy) - 1:
+            print(", ",end="")
+
+    print("]\n")
     print("Full Lz: ", len(Ly))
     print("Unique Lz: ", len(uLy))
     print("Max Lz: ", max(Ly))
@@ -127,21 +182,21 @@ def printRecap(x,y,Lx1,Lx2,Ly,uLy,uLy2y,m1,m2,m3,mx1,mx2,mx3):
 
     print("TRUTH EXPR")
     print("x\t Lx")
-    printTruthTab(mx1,3)
+    printTruthTab(mx1,inbits)
     print(str(m1))
     print("Gates: ",countGates(str(m1)))
 
     print("\ny\t Ly")
-    printTruthTab(mx2,3)
+    printTruthTab(mx2,inbits)
     print(m2)
     print("Gates: ",countGates(str(m2)))
 
 
-    print("\nz\t Lz")
-    printTruthTab(mx3,4)
+    print("\nLz\t z\t z (real)")
+    printZTruthTab(mx3,(inbits - 1)*2, x,Lx1,Lx2,uLy,uLy2y)
     print(m3)
     print("Gates: ",countGates(str(m3)))
 
-    
+
 if __name__ == '__main__':
     main()

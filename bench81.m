@@ -13,15 +13,15 @@ lpg1 = lp(lp > 1);
 lpl1 = lp(lp < 1);
 lpn1 =lp(lp~=1);
 
-p2=opomg.create('*',lpz,[],lpz);
-p1=opomg.create('+',l,[],l);
-p3=opomg.create('-',l,[],l); % not
-p4=opomg.create('/',l,[],l); % not
-p5=opomg.create('^',l,[],l);% not
-p5n=opomg.create('^',l,[],l);% not
+p2=opomg.create('*',lpz,[],lpz,"mul");
+p1=opomg.create('+',l,[],l,"plus");
+p3=opomg.create('-',l,[],l,"minus"); % not
+p4=opomg.create('/',l,[],l),"div"; % not
+p5=opomg.create('^',l,[],l,"exp");% not
+p5n=opomg.create('^',l,[],l,"exp_");% not
 p5.ename = '(x>1)';
 p5n.ename = '(x<1)';
-p6=opomg.create('atan2',l,[],l);% not
+p6=opomg.create('atan2',l,[],l,"atan2");% not
 
 pp = {p1,p2,p3,p4,p5,p5n,p6};
 pp = {p1,p2,p3,p4}; %,p5,p5n,p6};
@@ -52,6 +52,7 @@ for I=1:length(pp)
     end
 
     r=opomg.solve(s);  
+    return
     % use solvenaive
     v=opomg.verify(r);
     rr{end+1}= v;
