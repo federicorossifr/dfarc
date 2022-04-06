@@ -9,6 +9,7 @@ from collections import OrderedDict
 import re
 
 
+
 def genTruthTable(outputs,inbits,outbits = 0):
     if outbits < 1:
         outbits = max(outputs).bit_length()
@@ -66,6 +67,8 @@ def main():
     parser.add_argument('--prefix')
     args = parser.parse_args()
 
+    inbits = int(args.bits)
+
     solution = json.load(open(args.input,"r"))
     Lx1 = solution['Lx1']
     Lx2 = solution['Lx2']
@@ -78,8 +81,10 @@ def main():
     m2,mx2 = genBoolExpr(Lx2,int(args.bits),"y")
     m3,mx3 = genLzBoolExpr(x,int(args.bits),uLy,uLy2y)
 
-    #printRecap(x,y,Lx1,Lx2,Ly,uLy,uLy2y,m1,m2,m3,mx1,mx2,mx3,int(args.bits))
-    printFinalOpListing(x,Lx1,Lx2,uLy,uLy2y,solution['op'])
+    mnaive,mxnaive = genBoolExpr(genNaiveTable(x,y,inbits),int(2*inbits),"y")
+
+    printRecap(x,y,Lx1,Lx2,Ly,uLy,uLy2y,m1,m2,m3,mx1,mx2,mx3,mnaive,mxnaive,int(args.bits))
+    #printFinalOpListing(x,Lx1,Lx2,uLy,uLy2y,solution['op'])
 
 
 
@@ -134,9 +139,22 @@ def printOpTable(x,Lx1,Lx2,uLy,uLy2y):
             print(uLy2y[uLy.index(zindex)],end="\t")
         print("")
 
+def genNaiveTable(x,y,inbits):
+    x = np.array(x)
+    xf = np.concatenate(([0],x,[np.Infinity],-x))
+    of = []
+    for i,x1 in enumerate(xf):
+        for j,x2 in enumerate(xf):
+            ib = '{0:0{1}b}'.format(i,inbits)
+            jb = '{0:0{1}b}'.format(j,inbits)
+            out = x1+x2
+            minIdx = np.argmin((xf-out)**2)
+            of.append(minIdx)
+    of = [x.item() for x in of]
+    return of
 # We will use paper nomenclature here
 # x1 => x; x2 => y; y => z
-def printRecap(x,y,Lx1,Lx2,Ly,uLy,uLy2y,m1,m2,m3,mx1,mx2,mx3,inbits):
+def printRecap(x,y,Lx1,Lx2,Ly,uLy,uLy2y,m1,m2,m3,mx1,mx2,mx3,mn,mxn,inbits):
     print("\n===============\n")
     print("POSIT DOMAIN")
     print("Operands (x,y):")
@@ -196,6 +214,11 @@ def printRecap(x,y,Lx1,Lx2,Ly,uLy,uLy2y,m1,m2,m3,mx1,mx2,mx3,inbits):
     printZTruthTab(mx3,(inbits - 1)*2, x,Lx1,Lx2,uLy,uLy2y)
     print(m3)
     print("Gates: ",countGates(str(m3)))
+
+    print("\nLz\t z")
+    printTruthTab(mxn,2*inbits)
+    print(mn)
+    print("Gates: ",countGates(str(mn)))
 
 
 if __name__ == '__main__':
