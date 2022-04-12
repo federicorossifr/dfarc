@@ -35,7 +35,7 @@ def main():
     parser.add_argument('input',help="input problem file as JSON")
     parser.add_argument('--output','-o',default="output solution file as JSON")
     parser.add_argument('--first0',action="store_true",help="Enforce that first Lx and first Ly are ZERO")
-    parser.add_argument('--xpolicy',choices=["distinct","mono","monodec","none"],default="none",help="policy for Lx1 and Lx2")
+    parser.add_argument('--xpolicy',choices=["distinct","mono","monodec","none","inverse"],default="none",help="policy for Lx1 and Lx2")
     parser.add_argument('--ypolicy',choices=["distinct","mono","monodec","none"],default="none",help="policy for Ly")
     parser.add_argument('--target',choices=["maxx","sum","firstsol"],default="sum",help="target optimization function")
     parser.add_argument('--time-limit',default=0,type=int,help="time limit before stopping solver. 0=infinite can be interrupted by CLTR+C")
@@ -111,6 +111,14 @@ def main():
             for i in range(1,nx2):
                 # others shall be greater than previous
                 model.Add(Lx2[i] > Lx2[i-1])
+    if args.xpolicy == "inverse": # useful for div/sub
+        for i in range(1,nx1):
+            # X1 mono increasing 
+            model.Add(Lx1[i] > Lx1[i-1])
+
+        for i in range(1,nx1):
+            # X2 mono decreasing
+            model.Add(Lx2[i] < Lx2[i-1])                
     elif args.xpolicy == "monodec":
         for i in range(0,nx1-1):
             # others shall be greater than previous

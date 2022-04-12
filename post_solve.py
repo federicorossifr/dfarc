@@ -48,19 +48,21 @@ def genBoolExpr(outputs,nbits, varname, outbits = -1):
 
 def genLzBoolExpr(x,nbits,uLy,uLy2y):
     lzMap = genLzTable(x,uLy,uLy2y)
-    orderedLzMap = OrderedDict(sorted(lzMap.items()))
     return genBoolExpr(lzMap,((nbits - 1)*2),"z",nbits)
     
 
 def genLzTable(x,uLy,uLy2y):
-    ymap = {}
-
-    for i,ly in enumerate(uLy):
-        ymap[ly] = x.index(uLy2y[i])    
-
-    return ymap
+    return dict(uLy2y)
 
 def main():
+
+    opfun = {
+        '+': operator.add,
+        '*': operator.mul,
+        '/': operator.truediv,
+        '-': operator.sub
+    }
+
     parser = argparse.ArgumentParser(description='Process some integers.')    
     parser.add_argument('input')
     parser.add_argument('--bits')
@@ -84,7 +86,7 @@ def main():
     mnaive,mxnaive = genBoolExpr(genNaiveTable(x,y,inbits),int(2*inbits),"y")
 
     printRecap(x,y,Lx1,Lx2,Ly,uLy,uLy2y,m1,m2,m3,mx1,mx2,mx3,mnaive,mxnaive,int(args.bits))
-    #printFinalOpListing(x,Lx1,Lx2,uLy,uLy2y,solution['op'])
+    printFinalOpListing(x,Lx1,Lx2,uLy,uLy2y,solution['op'],opfun[solution['op']])
 
 
 
@@ -110,7 +112,7 @@ def countGates(boolExpr):
     orGates  = len(re.findall("Or",  boolExpr))
     return andGates + orGates
 
-def printFinalOpListing(x,Lx1,Lx2,uLy,uLy2y,op):
+def printFinalOpListing(x,Lx1,Lx2,uLy,uLy2y,op,opfun):
     print("\n===============")
     print("x: ",x)
     print("Lx: ",Lx1)
@@ -118,12 +120,14 @@ def printFinalOpListing(x,Lx1,Lx2,uLy,uLy2y,op):
     print("Lz:", uLy)
     print("Lz2z:", uLy2y)
     print("")
+    ymap = dict(uLy2y)
     for i,lx in enumerate(Lx1):
         for j,ly in enumerate(Lx2):
             zindex = Lx1[i]+Lx2[j]
-            print(x[i],op,x[j])
+            print(x[i],op,x[j],"=",opfun(x[i],x[j]))
             print(Lx1[i],"+",Lx2[j],"=",zindex)
-            print("Lz[",zindex,"] = ",uLy2y[uLy.index(zindex)])
+            print("Lz[",zindex,"] = ",ymap[zindex])
+            print()
             print("-----------------")
 
 def printOpTable(x,Lx1,Lx2,uLy,uLy2y):
@@ -177,7 +181,7 @@ def printRecap(x,y,Lx1,Lx2,Ly,uLy,uLy2y,m1,m2,m3,mx1,mx2,mx3,mn,mxn,inbits):
     print("\nLz[Lx+Ly]:\n")
 
     printOpTable(x,Lx1,Lx2,uLy,uLy2y)
-    printFinalOpListing(x,Lx1,Lx2,uLy,uLy2y,"*")
+    #printFinalOpListing(x,Lx1,Lx2,uLy,uLy2y,"*")
 
 
     print("\nLz => z [uniques only]")
