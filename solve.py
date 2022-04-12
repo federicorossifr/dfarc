@@ -8,7 +8,7 @@ import os
 import sys
 
 
-__version__ = "0.9.0"
+__version__ = "0.9.1"
 
 class VarArraySolutionPrinter(cp_model.CpSolverSolutionCallback):
     """Print intermediate solutions."""
@@ -225,8 +225,15 @@ def main():
             else:
                 print("Lx",s["Lx1"])              
 
+            # these are the unique total of sums
+            # this operation provides the mapping from every entry Ly to the obtained Ly
+            # equivalent in matlab to:
+            #   [u,ui] = unique(Ly)
+            #
+            # with eqgroup s[Ly] <-> problem.y (notice repetitions) 
             unique_ly = set(s["Ly"]);
-            unuque_lyd = dict([(u,i) for i,u in enumerate(s["Ly"])]) # from unique Ly to one example of the equivalence group
+            unuque_lyd = dict([(u,i) for i,u in enumerate(s["Ly"])]) # the last (but could be any) representative of equivalence group
+
             max_y = max(s["Ly"])
             min_y = min(s["Ly"])
 
@@ -234,12 +241,15 @@ def main():
             print("Ly",s["Ly"])
             print("uLy",unique_ly);             
             
+
+            # objective: identify the real value associated to every unique Ly. In case of classic mode each of them is distinct and also each
+            # Ly corresponds to a variable 
+            #   length(p.Ly) == length(p.y)
             if len(eqgroups) != 0:
-                # in this case we want to explicitly descript the mapping between range uLy aka min("Ly")..max("Ly") to values
+                # map_uLy_to_target[indexof sorted(unique_ly)]
                 map_uLy_to_target = [0 for x in range(0,len(unique_ly))]
                 for j,uLy in enumerate(sorted(unique_ly)):
-                    idx = unuque_lyd[uLy] # index of example input (all equivalent as real value value)
-                    map_uLy_to_target[j] = s["y"][idx]
+                    map_uLy_to_target[j] = (uLy,s["y"][unuque_lyd[uLy]])
                 s["uLy2y"] = map_uLy_to_target
                 print("uLy2y",map_uLy_to_target)
             else:

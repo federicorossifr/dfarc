@@ -9,6 +9,7 @@ if iscell(problem)
 end
 
 problem.fx = [];
+problem.name= strrep(problem.name,'*','mul');
 fpp = strcat(problem.name,'.json');
 f = fopen(fpp,'w');
 fwrite(f,jsonencode(problem));
@@ -76,17 +77,25 @@ if problem.timelimit ~= 0
 else
     timelimit = '';
 end
-if ispc
-    cmd=sprintf('python %s "%s" %s %s %s %s %s --maxint %d -o "%s" --target %s %s %s',problem.app,fpp,problem.args,first0,xpolicy,ypolicy,minint,problem.maxint,fp,problem.target,firstsol,timelimit);
-system(cmd);
-else
-    py='python3';
- cmd=sprintf('env -i bash -l -c ''%s %s "%s" %s %s %s %s %s --maxint %d -o "%s" --target %s %s %s''',py,problem.app,fpp,problem.args,first0,xpolicy,ypolicy,minint,problem.maxint,fp,problem.target,firstsol,timelimit);
-cmd
-r = []
-return;
-system(cmd);
+args = {problem.app,fpp,problem.args,first0,xpolicy,ypolicy,sprintf('-o "%s"',fp),minint,sprintf('--maxint %d' ,problem.maxint),sprintf('--target %s',problem.target),firstsol,timelimit};
+post='';
+for I=1:length(args)
+    if isempty(args{I}) == 0
+        post = [post ' ' args{I}];
+    end
 end
+if ispc
+    cmd=sprintf(['python ' post]);
+else
+    if ismac
+        py='/Users/eruffaldi/venv/bin/python';
+    else
+        py='python3';
+    end
+    cmd=sprintf('env -i bash -l -c ''%s %s''',py,post);
+end
+cmd
+system(cmd);
 e = toc;
 if exist(fp,'file')     
     r = opomg.loadsolution(fp);
