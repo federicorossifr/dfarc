@@ -10,18 +10,20 @@ import re
 
 
 
-def genTruthTable(outputs,inbits,outbits = 0):
+def genTruthTable(outputs,inbits,outbits = 0,x = []):
     if outbits < 1:
         outbits = max(outputs).bit_length()
     ttout_entries = 2**int(inbits)
 
     ttouts = np.empty([ttout_entries, outbits], dtype = str)
-    
     for i in range(ttout_entries):
-        try:
-            ttout = np.array(list('{0:0{1}b}'.format(outputs[i],outbits)))
+        try:   
+            _tmp = outputs[i]
+            if isinstance(_tmp,float):
+                _tmp = x.index(_tmp)
+            ttout = np.array(list('{0:0{1}b}'.format(_tmp,outbits)))
             ttouts[i] = ttout
-        except:
+        except (IndexError, KeyError) as e:
             ttouts[i] = '-'*outbits
 
 
@@ -33,9 +35,9 @@ def genTruthTable(outputs,inbits,outbits = 0):
 
     return tt_stringlist,ttouts
 
-def genBoolExpr(outputs,nbits, varname, outbits = -1):
+def genBoolExpr(outputs,nbits, varname, outbits = -1, x = []):
     X = ttvars(varname,int(nbits))
-    truth_strings,tt = genTruthTable(outputs,nbits,outbits)
+    truth_strings,tt = genTruthTable(outputs,nbits,outbits,x)
     logfun = []
     if outbits < 1:
         outbits = clog2(max(outputs))
@@ -48,7 +50,7 @@ def genBoolExpr(outputs,nbits, varname, outbits = -1):
 
 def genLzBoolExpr(x,nbits,uLy,uLy2y):
     lzMap = genLzTable(x,uLy,uLy2y)
-    return genBoolExpr(lzMap,((nbits - 1)*2),"z",nbits)
+    return genBoolExpr(lzMap,((nbits - 1)*2),"z",nbits,x)
     
 
 def genLzTable(x,uLy,uLy2y):
@@ -132,6 +134,8 @@ def printFinalOpListing(x,Lx1,Lx2,uLy,uLy2y,op,opfun):
 
 def printOpTable(x,Lx1,Lx2,uLy,uLy2y):
 
+    ymap = dict(uLy2y)
+
     print("",end="\t")
     for x_ in x:
         print(x_,end="\t")
@@ -140,7 +144,7 @@ def printOpTable(x,Lx1,Lx2,uLy,uLy2y):
         print(x[i],end="\t")
         for j,ly in enumerate(Lx2):
             zindex = Lx1[i]+Lx2[j]
-            print(uLy2y[uLy.index(zindex)],end="\t")
+            print(uLy2y[uLy.index(zindex)][0],end="\t")
         print("")
 
 def genNaiveTable(x,y,inbits):
@@ -171,6 +175,19 @@ def printRecap(x,y,Lx1,Lx2,Ly,uLy,uLy2y,m1,m2,m3,mx1,mx2,mx3,mn,mxn,inbits):
     print(x,"=>",Lx1,"\n")
     print("y => Ly")
     print(x,"=>",Lx2,"\n")
+    
+    print("Lz => z")
+    print("[",end="")
+    for ul in uLy2y[:-1]:
+        print(ul[0],end=", ")
+    print(uLy2y[-1][0],end="")
+    print("] => ", end ="")
+
+    print("[",end="")
+    for ul in uLy2y[:-1]:
+        print(ul[1],end=", ")
+    print(uLy2y[-1][1],end="")
+    print("] => ", end ="")
 
     print("Lx+Ly: ")
     print("\t","\t".join(map(str,Lx2)))
@@ -178,9 +195,9 @@ def printRecap(x,y,Lx1,Lx2,Ly,uLy,uLy2y,m1,m2,m3,mx1,mx2,mx3,mn,mxn,inbits):
     for i,l in enumerate(np.reshape(Ly,[len(Lx1), len(Lx2)])):
         print(Lx1[i],"\t","\t".join(map(str,list(l))))
     
-    print("\nLz[Lx+Ly]:\n")
+    #print("\nLz[Lx+Ly]:\n")
 
-    printOpTable(x,Lx1,Lx2,uLy,uLy2y)
+    #printOpTable(x,Lx1,Lx2,uLy,uLy2y)
     #printFinalOpListing(x,Lx1,Lx2,uLy,uLy2y,"*")
 
 
