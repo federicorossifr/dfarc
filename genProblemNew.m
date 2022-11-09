@@ -1,10 +1,10 @@
-function [prob] = genProblemNew(nbits,esbits,fun)
+function [prob] = genProblemNew(nbits,esbits,fun,tabop)
 
     % List of posit numbers
     plist = positlist(nbits,esbits);
 
     % Table of operation
-    tabop = bsxfun(fun,plist,plist');
+    %tabop = bsxfun(fun,plist,plist');
 
     % Number of problem variables
     % Nx = 2^{nbits - 1} - 1
@@ -87,7 +87,7 @@ function [prob] = genProblemNew(nbits,esbits,fun)
 
     %objective function min sum of all variables
     prob.f = ones(N,1);
-    
+
     %solver type
     prob.solver = "intlinprog";
 
