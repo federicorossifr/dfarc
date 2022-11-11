@@ -1,12 +1,12 @@
 
 
-n = 6;
+n = 4;
 k = 0;
 Nx = (2^(n - 1) - 1);
 op = @plus;
 plist = positlist(n,k);
 ptab = bsxfun(op, plist,plist');
-
+cloptab = closestPtab(ptab,plist);
 disp("Problem setup started...");
 prob = genProblemNew(n,k,op,ptab);
 disp("Problem setup completed");
@@ -23,14 +23,17 @@ solution.op = getFunctionName(op);
 solution.ophandle = op;
 solution.p  = plist;
 solution.optab = ptab;
+solution.cloptab = cloptab;
 solution.Lx = resx;
 solution.Ly = resy;
 solution.Lz = resx + resy';
 
-lz2z = genLz2z(solution.Lz,solution.optab,solution.p);
+solution.Lz2z = genLz2z(solution.Lz,solution.cloptab,solution.p);
 
 
-solution.Lx
+solution.Lx;
+
+verify(solution.optab,solution.cloptab,solution.p,solution.Lx,solution.Ly,solution.Lz2z);
 
 
 function name = getFunctionName(op)
@@ -72,16 +75,16 @@ function lz2z = genLz2z(Lz,optab,plist)
     for i=1:r
         for j=1:c
             p = optab(i,j);
-
+        
             % closest posit and relative index
-            [~, idx] = min(abs(plist-p));
-            minp = plist(idx);
+            %[~, idx] = min(abs(plist-p));
+            %minp = plist(idx);
 
             % map idx to correspondent z (only if not contained)
             lzv = Lz(i,j);
             if ~ismember(lzv,lz2zKeys)
                 lz2zKeys = [lz2zKeys; lzv];
-                lz2zVals = [lz2zVals; minp];
+                lz2zVals = [lz2zVals; p];
             end
         end
     end
@@ -98,4 +101,31 @@ function optab1d = setSecDiagToOne(optab)
 
     optab1d = (optab1d .* dd1m) + dd;
 
+end
+
+function verified = verify(optab,cloptab,plist,Lx,Ly,Lz2z)
+    r = size(Lx,1);
+    r1 = size(Ly,1);
+    assert(r == r1,"Lx,Ly sizes do not match");
+    for i=1:r
+        for j=1:r
+            result = cloptab(i,j);
+            Lxi = Lx(i);
+            Lyj = Ly(j);
+            Lzij = Lxi + Lyj;
+            
+            Lzidx = find(Lz2z.keys == Lzij);
+            z = Lz2z.vals(Lzidx);
+               
+            if z ~= result 
+                fprintf("===== Error on %d,%d =====\n",i,j);
+                fprintf("z=%f, exp=%f, exact=%f\n",z,result,optab(i,j));
+                fprintf("x=%f, y=%f\n",plist(i),plist(j));
+                fprintf("lx=%d, ly=%d\n", Lxi,Lyj);
+                fprintf("lz=%d, lzidx=%d\n",Lzij,Lzidx);
+            end
+
+        end
+    end
+    verified = true;
 end
