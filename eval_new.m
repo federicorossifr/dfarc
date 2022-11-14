@@ -3,12 +3,12 @@
 n = 4;
 k = 0;
 Nx = (2^(n - 1) - 1);
-op = @plus;
+op = @times;
 plist = positlist(n,k);
 ptab = bsxfun(op, plist,plist');
 cloptab = closestPtab(ptab,plist);
 disp("Problem setup started...");
-prob = genProblemNew(n,k,op,ptab);
+prob = genProblemNew(n,cloptab);
 disp("Problem setup completed");
 
 disp("Solver started...");
@@ -26,13 +26,9 @@ solution.optab = ptab;
 solution.cloptab = cloptab;
 solution.Lx = resx;
 solution.Ly = resy;
-solution.Lz = resx + resy';
+solution.Lz = solution.Lx + solution.Ly';
 
 solution.Lz2z = genLz2z(solution.Lz,solution.cloptab,solution.p);
-
-
-solution.Lx;
-
 verify(solution.optab,solution.cloptab,solution.p,solution.Lx,solution.Ly,solution.Lz2z);
 
 
@@ -85,6 +81,13 @@ function lz2z = genLz2z(Lz,optab,plist)
             if ~ismember(lzv,lz2zKeys)
                 lz2zKeys = [lz2zKeys; lzv];
                 lz2zVals = [lz2zVals; p];
+            else
+                Lzidx = find(lz2zKeys == lzv);
+                z = lz2zVals(Lzidx);
+                if double(z) ~= double(p)
+                    fprintf("=====Error on %d,%d=====\n",i,j);
+                    fprintf("%d already in with value: %f (new value: %f)\n",lzv,z,p );
+                end
             end
         end
     end
@@ -120,9 +123,9 @@ function verified = verify(optab,cloptab,plist,Lx,Ly,Lz2z)
             if z ~= result 
                 fprintf("===== Error on %d,%d =====\n",i,j);
                 fprintf("z=%f, exp=%f, exact=%f\n",z,result,optab(i,j));
-                fprintf("x=%f, y=%f\n",plist(i),plist(j));
-                fprintf("lx=%d, ly=%d\n", Lxi,Lyj);
-                fprintf("lz=%d, lzidx=%d\n",Lzij,Lzidx);
+                %fprintf("x=%f, y=%f\n",plist(i),plist(j));
+                %fprintf("lx=%d, ly=%d\n", Lxi,Lyj);
+                %fprintf("lz=%d, lzidx=%d\n",Lzij,Lzidx);
             end
 
         end

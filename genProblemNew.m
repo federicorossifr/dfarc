@@ -1,8 +1,6 @@
-function [prob] = genProblemNew(nbits,esbits,fun,tabop)
+function [prob] = genProblemNew(nbits,tabop)
 
-    % List of posit numbers
-    plist = positlist(nbits,esbits);
-
+  
     % Table of operation
     %tabop = bsxfun(fun,plist,plist');
 
@@ -26,9 +24,10 @@ function [prob] = genProblemNew(nbits,esbits,fun,tabop)
     % Inequality constraints [mono inc on Lx Ly]
     % Ax <= b
     % We have (Nx - 1)*2 constraints for mono inc
+    % In the paper:
+    % {L^x_i}{\ge L^x_j + 1}{\quad i>j}
+    % {L^y_i}{\ge L^y_j + 1}{\quad i>j}
     aRows = (Nx - 1)*2;
-    k = Nx - 2;
-    nV = (k + 1)*k/2;
     prob.A = zeros([aRows N]);
     prob.Aeq = [];
     prob.beq = [];
@@ -44,27 +43,20 @@ function [prob] = genProblemNew(nbits,esbits,fun,tabop)
     % right hand size (b vector) is -1 for <=
     prob.b = -1*ones(size(prob.A,1),1);
 
-    % Using diagonal elements as pivot for additional inequalities
-    % and equalities. We exploit the actual "tabop" tabulated 
-    % posit result to impose equality between Lzs or inequalities
-    % for now inequalities are expressed as <=
-    % For simmetry, we only operate on the bottom half triangular matrix
-    for d = 2:Nx-1
-        pvt1 = struct;
-        pvt1.r = d;
-        pvt1.c = d;
-        constr = genConstr(pvt1,Nx,tabop);
-        prob.A = [prob.A ; constr.A];
-        prob.b = [prob.b ; constr.b];
-        prob.Aeq = [prob.Aeq; constr.Aeq];
-        prob.beq = [prob.beq; constr.beq];
-        
-        pvt1.r = d+1;
-        constr = genConstr(pvt1,Nx,tabop);
-        prob.A = [prob.A ; constr.A];
-        prob.b = [prob.b ; constr.b];
-        prob.Aeq = [prob.Aeq; constr.Aeq];
-        prob.beq = [prob.beq; constr.beq];    
+    % Global constraints
+    % In the paper:
+    % {L^x_i + L^y_j + 1}{\le L^x_k + L^y_q}{\quad \forall i,j,k,q~s.t.~x_i \otimes y_j < x_k \otimes y_q} 
+    for i=1:Nx-1
+        for j=1:i
+            pvt = struct;
+            pvt.r = i;
+            pvt.c = j;
+            constr = genGlobalConstr(pvt,Nx,tabop);
+            prob.A = [prob.A ; constr.A];
+            prob.b = [prob.b ; constr.b];
+            prob.Aeq = [prob.Aeq; constr.Aeq];
+            prob.beq = [prob.beq; constr.beq];             
+        end
     end
 
 
@@ -72,6 +64,8 @@ function [prob] = genProblemNew(nbits,esbits,fun,tabop)
     % Equality constraints
     % Symmetric across the diagonal
     % Lzij = Lzji
+    % In the paper
+    % {L^x_i + L^y_j}{= L^x_j + L^y_i}{\quad \forall i, \forall j}
     for r=2:Nx
         for c=1:r-1
             constrRow = zeros(N,1)';

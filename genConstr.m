@@ -33,17 +33,20 @@ function [constr] = genConstr(pivot,Nx,tabop)
 
             aeqRow(r1) = -1;
             aeqRow(c1+Nx) = -1;
-        
-        if tabop(r,c) < tabop(r1,c1) % sum case
-            %fprintf("Applied constraint on: %f < %f (%d,%d) < (%d,%d)\n",tabop(r,c),tabop(r1,c1),r,c,r1,c1);
+
+            rc = double(tabop(r,c));
+            r1c1 = double(tabop(r1,c1));
+
+        if rc < r1c1 % sum case
+            fprintf("Applied constraint on: %f < %f (%d,%d) < (%d,%d)\n",tabop(r,c),tabop(r1,c1),r,c,r1,c1);
             A = [A; aRow];
             b = [b; -1];
-        elseif tabop(r,c) > tabop(r1,c1) % mul case
-            %fprintf("Applied constraint on: %f > %f (%d,%d) > (%d,%d)\n",tabop(r,c),tabop(r1,c1),r,c,r1,c1);
+        elseif rc > r1c1 % mul case
+            fprintf("Applied constraint on: %f > %f (%d,%d) > (%d,%d)\n",tabop(r,c),tabop(r1,c1),r,c,r1,c1);
             A = [A; -aRow];
-            b = [b; 1];
+            b = [b; -1];
         else
-            %fprintf("Applied constraint on: %f = %f (%d,%d) = (%d,%d)\n",tabop(r,c),tabop(r1,c1),r,c,r1,c1);
+            fprintf("Applied constraint on: %f = %f (%d,%d) = (%d,%d)\n",tabop(r,c),tabop(r1,c1),r,c,r1,c1);
             Aeq = [Aeq; aeqRow];
             beq = [beq; 0];
         end
