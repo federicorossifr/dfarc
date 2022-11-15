@@ -1,5 +1,5 @@
 function [constr] = genGlobalConstr(pivot,Nx,tabop)
-    A = [];
+    A = zeros(Nx*(Nx+1)/2,2*Nx);
     b = [];
     Aeq = [];
     beq = [];
@@ -8,6 +8,7 @@ function [constr] = genGlobalConstr(pivot,Nx,tabop)
     pVal = tabop(pivot.c,pivot.r);
     r = pivot.r;
     c = pivot.c;
+    counter = 1;
     for i=1:Nx
         if i == r
             continue
@@ -33,8 +34,9 @@ function [constr] = genGlobalConstr(pivot,Nx,tabop)
 
             if pVal < opVal 
                 %fprintf("Applied constraint on: %f < %f (%d,%d) < (%d,%d)\n",pVal,opVal,r,c,i,j);
-                A = [A; aRow];
+                A(counter,:) = aRow;
                 b = [b; -1];
+                counter = counter+1;
             elseif pVal == opVal
                 %fprintf("Applied constraint on: %f = %f (%d,%d) = (%d,%d)\n",pVal,opVal,r,c,i,j);
                 %Aeq = [Aeq; aeqRow];
@@ -42,9 +44,9 @@ function [constr] = genGlobalConstr(pivot,Nx,tabop)
             end
         end
     end
-    constr.A = A;
+    maxRow=size(b,1);
+    constr.A = A(1:maxRow,:);
     constr.Aeq = Aeq;
     constr.beq = beq;
     constr.b = b;
-
 end

@@ -1,34 +1,61 @@
-function [solution,problem] = genSolution(n,k,op)
-n = 4;
-k = 0;
+function [solution,problem] = genSolution(n,k,op,genProblemOnly)
+
+solve = (nargin < 4);
+
 Nx = (2^(n - 1) - 1);
-op = @plus;
 plist = positlist(n,k);
 ptab = bsxfun(op, plist,plist');
 cloptab = closestPtab(ptab,plist);
 disp("Problem setup started...");
-problem = genProblemNew(n,cloptab);
+antiSym = checkAntiSymmetry(cloptab);
+if isequal(op,@times) || isequal(op,@plus)
+    problem = genMonoIncProblem(n,cloptab);
+elseif isequal(op,@rdivide)
+    if antiSym
+        ptab_t = bsxfun(@times, plist,plist');
+        cloptab_t = closestPtab(ptab_t,plist);
+        problem = genMonoIncProblem(n,cloptab_t);    
+    else
+        problem = genMonoInvProblem(n,cloptab);
+    end
+end
+
+
+
 disp("Problem setup completed");
+problem.p = plist;
+problem.optab = ptab;
+problem.cloptab = cloptab;
+if solve
+    disp("Solver started...");
+    res = intlinprog(problem.f,problem.intcon,problem.A,problem.b,problem.Aeq,problem.beq,problem.lb,problem.ub);
+    disp("Solver finished");
+    resx = int64(res(1:Nx));
+    resy = int64(res(Nx+1:2*Nx));
+    solution = struct;
+    
+    
+    solution.op = getFunctionName(op);
+    solution.ophandle = op;
+    solution.p  = plist;
+    solution.optab = ptab;
+    solution.cloptab = cloptab;
+    solution.Lx = resx;
 
-disp("Solver started...");
-res = intlinprog(problem.f,problem.intcon,problem.A,problem.b,problem.Aeq,problem.beq,problem.lb,problem.ub);
-disp("Solver finished");
-resx = int64(res(1:Nx));
-resy = int64(res(Nx+1:2*Nx));
-solution = struct;
+    if(antiSym)
+        solution.Ly = flip(resy);
+    else
+        solution.Ly = resy;
+    end
 
 
-solution.op = getFunctionName(op);
-solution.ophandle = op;
-solution.p  = plist;
-solution.optab = ptab;
-solution.cloptab = cloptab;
-solution.Lx = resx;
-solution.Ly = resy;
-solution.Lz = solution.Lx + solution.Ly';
-
-solution.Lz2z = genLz2z(solution.Lz,solution.cloptab,solution.p);
-solution.verified = verify(solution.optab,solution.cloptab,solution.p,solution.Lx,solution.Ly,solution.Lz2z);
+    solution.Lz = solution.Lx + solution.Ly';
+    
+    solution.Lz2z = genLz2z(solution.Lz,solution.cloptab,solution.p);
+    solution.verified = verify(solution.optab,solution.cloptab,solution.p,solution.Lx,solution.Ly,solution.Lz2z);
+else
+    solution = [];
+end
 end
 
 
@@ -37,6 +64,8 @@ function name = getFunctionName(op)
         name = "mul";
     elseif isequal(op,@plus)
         name = "sum";
+    elseif isequal(op,@rdivide)
+        name = "div";
     end
 end
 
@@ -110,6 +139,7 @@ function verified = verify(optab,cloptab,plist,Lx,Ly,Lz2z)
     r = size(Lx,1);
     r1 = size(Ly,1);
     assert(r == r1,"Lx,Ly sizes do not match");
+    verified = true;
     for i=1:r
         for j=1:r
             result = cloptab(i,j);
@@ -126,9 +156,29 @@ function verified = verify(optab,cloptab,plist,Lx,Ly,Lz2z)
                 %fprintf("x=%f, y=%f\n",plist(i),plist(j));
                 %fprintf("lx=%d, ly=%d\n", Lxi,Lyj);
                 %fprintf("lz=%d, lzidx=%d\n",Lzij,Lzidx);
+
+                verified = false;
             end
 
         end
     end
-    verified = true;
+end
+
+    function antisym = checkAntiSymmetry(tab)
+    [r,c] = size(tab);
+    diffs = zeros(r,c);
+    antisym = true;
+    for i=1:r
+        for j=1:c
+            ii = c-j+1;
+            jj = r-i+1;
+            diffs(i,j) = (tab(i,j) ~= tab(ii,jj));
+            if (tab(i,j) ~= tab(ii,jj))
+                %fprintf("(%d,%d) diff from (%d,%d), %f != %f\n",i,j,ii,jj,tab(i,j),tab(ii,jj));
+                antisym = false;
+                return;
+            end
+        end
+    end
+
 end

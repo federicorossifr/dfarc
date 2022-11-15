@@ -1,4 +1,4 @@
-function [prob] = genProblemNew(nbits,tabop)
+function [prob] = genMonoIncProblem(nbits,tabop)
 
   
     % Table of operation
@@ -28,7 +28,9 @@ function [prob] = genProblemNew(nbits,tabop)
     % {L^x_i}{\ge L^x_j + 1}{\quad i>j}
     % {L^y_i}{\ge L^y_j + 1}{\quad i>j}
     aRows = (Nx - 1)*2;
-    prob.A = zeros([aRows N]);
+    maxInnerRows = Nx*(Nx+1)/2;
+    maxRows = maxInnerRows*(Nx*(Nx-1)/2)/2;    
+    prob.A = zeros([aRows+maxRows N]);
     prob.Aeq = [];
     prob.beq = [];
     for r = 1:( aRows)
@@ -39,25 +41,34 @@ function [prob] = genProblemNew(nbits,tabop)
         prob.A(r,c) = 1;
         prob.A(r,c+1) = -1;
     end
+    disp("[Monotonic constraints set]");
     
     % right hand size (b vector) is -1 for <=
-    prob.b = -1*ones(size(prob.A,1),1);
+    prob.b = -1*ones(aRows,1);
 
     % Global constraints
     % In the paper:
     % {L^x_i + L^y_j + 1}{\le L^x_k + L^y_q}{\quad \forall i,j,k,q~s.t.~x_i \otimes y_j < x_k \otimes y_q} 
+    counter = aRows+1;
+    counterI=1;
+    constrRowsColl = zeros(Nx*(Nx+1)/2,1);
     for i=1:Nx-1
         for j=1:i
+            %fprintf("[Setting global constraints for: (%d,%d) ]\n",i,j);
             pvt = struct;
             pvt.r = i;
             pvt.c = j;
             constr = genGlobalConstr(pvt,Nx,tabop);
-            prob.A = [prob.A ; constr.A];
-            prob.b = [prob.b ; constr.b];
-            prob.Aeq = [prob.Aeq; constr.Aeq];
-            prob.beq = [prob.beq; constr.beq];             
+            constrRows = size(constr.A,1);
+            constrRowsColl(counterI) = constrRows;
+            prob.A(counter:counter+constrRows-1,:) = constr.A;
+            counter = counter+constrRows;
+            prob.b = [prob.b; constr.b];   
+            counterI=counterI+1;
         end
     end
+    prob.A = prob.A(1:size(prob.b,1),:);
+    disp("[Global constraints set]");
 
 
 
@@ -78,10 +89,10 @@ function [prob] = genProblemNew(nbits,tabop)
             prob.beq = [prob.beq; 0];
         end
     end
-
+    disp(counterI)
     %objective function min sum of all variables
     prob.f = ones(N,1);
-
+    prob.Nx = Nx;
     %solver type
     prob.solver = "intlinprog";
 
