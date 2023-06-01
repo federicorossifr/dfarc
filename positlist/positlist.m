@@ -1,6 +1,6 @@
 function r = positlist(n,k)
 
-if k > 2
+if k > 2 && n < 8
     r=[];
      return;
 else
@@ -25,6 +25,8 @@ switch(n)
             r = posit8_2list();
         elseif k == 0
             r = posit8list();
+        elseif k == 4
+            r = posit8_4list();
         else
             error('this posit is not suported');
         end        

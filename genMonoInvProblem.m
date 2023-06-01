@@ -54,13 +54,13 @@ function [prob] = genMonoInvProblem(nbits,tabop)
     % {L^x_i + L^y_j + 1}{\le L^x_k + L^y_q}{\quad \forall i,j,k,q~s.t.~x_i \otimes y_j < x_k \otimes y_q} 
     counter = aRows+1;
     counterI=1;
-    for i=2:Nx-1
-        for j=1:Nx-i+1
-            %fprintf("[Setting global constraints for: (%d,%d) ]\n",i,j);
+    for i=2:Nx
+        for j=1:i-1
+            fprintf("[Setting global constraints for: (%d,%d) %f ]\n",i,j,tabop(i,j));
             pvt = struct;
             pvt.r = i;
             pvt.c = j;
-            constr = genGlobalConstr(pvt,Nx,tabop);
+            constr = genInvGlobalConstr(pvt,Nx,tabop);
             constrRows = size(constr.A,1);
             prob.A(counter:counter+constrRows-1,:) = constr.A;
             counter = counter+constrRows;

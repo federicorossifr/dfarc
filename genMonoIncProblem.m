@@ -18,8 +18,8 @@ function [prob] = genMonoIncProblem(nbits,tabop)
 
     % Upper bound is Nx for first var (L1x or L1y) and inf for others
     prob.ub = Inf(N,1);
-    prob.ub(1) = Nx;
-    prob.ub(Nx + 1) = Nx;
+    %prob.ub(1) = Nx;
+    %prob.ub(Nx + 1) = Nx;
 
     % Inequality constraints [mono inc on Lx Ly]
     % Ax <= b

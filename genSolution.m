@@ -8,9 +8,9 @@ ptab = bsxfun(op, plist,plist');
 cloptab = closestPtab(ptab,plist);
 disp("Problem setup started...");
 antiSym = checkAntiSymmetry(cloptab);
-if isequal(op,@times) || isequal(op,@plus)
+if isequal(op,@times) || isequal(op,@plus) 
     problem = genMonoIncProblem(n,cloptab);
-elseif isequal(op,@rdivide)
+elseif isequal(op,@rdivide) || isequal(op,@minus)
     if antiSym
         ptab_t = bsxfun(@times, plist,plist');
         cloptab_t = closestPtab(ptab_t,plist);
@@ -30,6 +30,10 @@ if solve
     disp("Solver started...");
     res = intlinprog(problem.f,problem.intcon,problem.A,problem.b,problem.Aeq,problem.beq,problem.lb,problem.ub);
     disp("Solver finished");
+    if size(res) == 0
+        solution = [];
+        return
+    end
     resx = int64(res(1:Nx));
     resy = int64(res(Nx+1:2*Nx));
     solution = struct;
@@ -52,7 +56,7 @@ if solve
     solution.Lz = solution.Lx + solution.Ly';
     
     solution.Lz2z = genLz2z(solution.Lz,solution.cloptab,solution.p);
-    solution.verified = verify(solution.optab,solution.cloptab,solution.p,solution.Lx,solution.Ly,solution.Lz2z);
+    solution.verified = verify(solution.optab,solution.cloptab,solution.p,solution.Lx,solution.Ly,solution.Lz2z,true);
 else
     solution = [];
 end
@@ -66,6 +70,8 @@ function name = getFunctionName(op)
         name = "sum";
     elseif isequal(op,@rdivide)
         name = "div";
+    elseif isequal(op,@minus)
+        name =  "sub";
     end
 end
 
@@ -135,13 +141,16 @@ function optab1d = setSecDiagToOne(optab)
 
 end
 
-function verified = verify(optab,cloptab,plist,Lx,Ly,Lz2z)
+function verified = verify(optab,cloptab,plist,Lx,Ly,Lz2z,bottomHalf)
     r = size(Lx,1);
     r1 = size(Ly,1);
     assert(r == r1,"Lx,Ly sizes do not match");
     verified = true;
     for i=1:r
         for j=1:r
+            if bottomHalf && j >= i
+                continue
+            end
             result = cloptab(i,j);
             Lxi = Lx(i);
             Lyj = Ly(j);
