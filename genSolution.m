@@ -164,7 +164,7 @@ function verified = verify(optab,cloptab,plist,Lx,Ly,Lz2z)
     end
 end
 
-    function antisym = checkAntiSymmetry(tab)
+function antisym = checkAntiSymmetry(tab)
     [r,c] = size(tab);
     diffs = zeros(r,c);
     antisym = true;
@@ -180,5 +180,8 @@ end
             end
         end
     end
-
 end
+
+
+
+
