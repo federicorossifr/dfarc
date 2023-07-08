@@ -1,5 +1,5 @@
 %[a,b]   = genSolution(4,0,@plus)
-[a1,b1] = genSolution(4,0,@times);
+[a1,b1,e] = genSolution(4,0,@times);
 %[a2,b2] = genSolution(6,0,@plus,false)
 %[a3,b4] = genSolution(6,2,@times)
 
@@ -10,9 +10,6 @@
 %[divs,divp] = genSolution(6,2,@rdivide);
 
 %sym = checkAntiSymmetry(divp.cloptab);
-
-
-toJsonEncodedSolution(a1)
 
 function diffs = checkAntiSymmetry(tab)
     [r,c] = size(tab);
@@ -30,15 +27,4 @@ function diffs = checkAntiSymmetry(tab)
 
 end
 
-function encoded = toJsonEncodedSolution(solution)
-     jstruct = struct;
-     jstruct.Lx1 = solution.Lx;
-     jstruct.Lx2 = solution.Ly;
-     jstruct.Ly  = reshape(solution.Lz.',1,[]);
-     jstruct.uLy2y = [solution.Lz2z.keys solution.Lz2z.vals];
-     jstruct.x1 = solution.p;
-     jstruct.y = reshape(solution.optab.',1,[]);
-    
-     encoded = jsonencode(jstruct);
-     
-end
+

@@ -1,4 +1,4 @@
-function [solution,problem] = genSolution(n,k,op,genProblemOnly)
+function [solution,problem,json_sol] = genSolution(n,k,op,genProblemOnly)
 
 solve = (nargin < 4);
 
@@ -53,6 +53,7 @@ if solve
     
     solution.Lz2z = genLz2z(solution.Lz,solution.cloptab,solution.p);
     solution.verified = verify(solution.optab,solution.cloptab,solution.p,solution.Lx,solution.Ly,solution.Lz2z);
+    json_sol = toJsonEncodedSolution(solution);     
 else
     solution = [];
 end
@@ -183,5 +184,16 @@ function antisym = checkAntiSymmetry(tab)
 end
 
 
-
+function encoded = toJsonEncodedSolution(solution)
+     jstruct = struct;
+     jstruct.Lx1 = solution.Lx;
+     jstruct.Lx2 = solution.Ly;
+     jstruct.Ly  = reshape(solution.Lz.',1,[]);
+     jstruct.uLy2y = [solution.Lz2z.keys solution.Lz2z.vals];
+     jstruct.x1 = solution.p;
+     jstruct.y = reshape(solution.optab.',1,[]);
+    
+     encoded = jsonencode(jstruct);
+     
+end
 
