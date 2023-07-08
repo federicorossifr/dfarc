@@ -35,7 +35,8 @@ if solve
     solution = struct;
     
     
-    solution.op = getFunctionName(op);
+    [name,sym] = getFunctionName(op);
+    solution.op = name;
     solution.ophandle = op;
     solution.p  = plist;
     solution.optab = ptab;
@@ -53,6 +54,7 @@ if solve
     
     solution.Lz2z = genLz2z(solution.Lz,solution.cloptab,solution.p);
     solution.verified = verify(solution.optab,solution.cloptab,solution.p,solution.Lx,solution.Ly,solution.Lz2z);
+    solution.op = sym;
     json_sol = toJsonEncodedSolution(solution);     
 else
     solution = [];
@@ -60,13 +62,16 @@ end
 end
 
 
-function name = getFunctionName(op)
+function [name,sym] = getFunctionName(op)
     if isequal(op,@times)
         name = "mul";
+        sym = "*";
     elseif isequal(op,@plus)
         name = "sum";
+        sym = "+";
     elseif isequal(op,@rdivide)
         name = "div";
+        sym = "/";
     end
 end
 
@@ -188,11 +193,12 @@ function encoded = toJsonEncodedSolution(solution)
      jstruct = struct;
      jstruct.Lx1 = solution.Lx;
      jstruct.Lx2 = solution.Ly;
+     jstruct.op = solution.op;
      jstruct.Ly  = reshape(solution.Lz.',1,[]);
      jstruct.uLy2y = [solution.Lz2z.keys solution.Lz2z.vals];
      jstruct.x1 = solution.p;
      jstruct.y = reshape(solution.optab.',1,[]);
-    
+        
      encoded = jsonencode(jstruct);
      
 end
