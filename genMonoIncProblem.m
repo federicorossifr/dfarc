@@ -14,7 +14,7 @@ function [prob] = genMonoIncProblem(nbits,tabop)
     prob.intcon = 1:N;
 
     % Lower bound is 0 for every variable
-    prob.lb = zeros([N 1]);
+    prob.lb = sparse(N,1);
 
     % Upper bound is Nx for first var (L1x or L1y) and inf for others
     prob.ub = Inf(N,1);
@@ -30,7 +30,7 @@ function [prob] = genMonoIncProblem(nbits,tabop)
     aRows = (Nx - 1)*2;
     maxInnerRows = Nx*(Nx+1)/2;
     maxRows = maxInnerRows*(Nx*(Nx-1)/2)/2;    
-    prob.A = zeros([aRows+maxRows N]);
+    prob.A = sparse(aRows+maxRows,N);
     prob.Aeq = [];
     prob.beq = [];
     for r = 1:( aRows)
@@ -53,6 +53,8 @@ function [prob] = genMonoIncProblem(nbits,tabop)
     counterI=1;
     constrRowsColl = zeros(Nx*(Nx+1)/2,1);
     for i=1:Nx-1
+	msg = sprintf("%d/%d",i,Nx-1);
+	disp(msg);
         for j=1:i
             %fprintf("[Setting global constraints for: (%d,%d) ]\n",i,j);
             pvt = struct;
