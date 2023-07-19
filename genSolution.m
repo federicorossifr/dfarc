@@ -58,8 +58,10 @@ if solve
     json_sol = toJsonEncodedSolution(solution);     
 else
     solution = [];
+    json_sol = "";
 end
 end
+
 
 
 function [name,sym] = getFunctionName(op)

@@ -1,15 +1,20 @@
-%[a,b]   = genSolution(4,0,@plus)
-[a1,b1,e] = genSolution(4,0,@times);
-%[a2,b2] = genSolution(6,0,@plus,false)
+addpath('positlist')
+
+%[a,b,e]   = genSolution(4,0,@plus)
+%[a1,b1,e] = genSolution(4,0,@times);
+%[s,p,e] = genSolution(6,2,@times);
 %[a3,b4] = genSolution(6,2,@times)
 
-%genSolution(8,0,@times,true)
+%[s,p,e] = genSolution(8,2,@times,true);
 
 
-%[divs,divp] = genSolution(4,0,@rdivide);
+%[divs,divp,e] = genSolution(4,0,@rdivide);
 %[divs,divp] = genSolution(6,2,@rdivide);
 
 %sym = checkAntiSymmetry(divp.cloptab);
+
+
+%saveToFile("p8_0_plus_solution.json",e)
 
 function diffs = checkAntiSymmetry(tab)
     [r,c] = size(tab);
@@ -28,3 +33,8 @@ function diffs = checkAntiSymmetry(tab)
 end
 
 
+function saveToFile(fname,encoded)
+	id = fopen(fname,'w');
+	fprintf(id,'%s',encoded);
+	fclose(id);
+end

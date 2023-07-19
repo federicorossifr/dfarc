@@ -14,7 +14,7 @@ function [prob] = genMonoIncProblem(nbits,tabop)
     prob.intcon = 1:N;
 
     % Lower bound is 0 for every variable
-    prob.lb = sparse(N,1);
+    prob.lb = zeros(N,1);
 
     % Upper bound is Nx for first var (L1x or L1y) and inf for others
     prob.ub = Inf(N,1);
@@ -30,7 +30,7 @@ function [prob] = genMonoIncProblem(nbits,tabop)
     aRows = (Nx - 1)*2;
     maxInnerRows = Nx*(Nx+1)/2;
     maxRows = maxInnerRows*(Nx*(Nx-1)/2)/2;    
-    prob.A = sparse(aRows+maxRows,N);
+    prob.A = zeros(aRows+maxRows,N,'int8');
     prob.Aeq = [];
     prob.beq = [];
     for r = 1:( aRows)
@@ -72,6 +72,18 @@ function [prob] = genMonoIncProblem(nbits,tabop)
     prob.A = prob.A(1:size(prob.b,1),:);
     disp("[Global constraints set]");
 
+    % Trasnform int8 A into sparse double A
+    disp("[TRANSFORMIG INT8 MATRIX INTO SPARSE DOUBLE]")
+    Al = sparse(logical(uint8(prob.A)));
+    An = -prob.A;
+    clear prob.A;
+    Aln = sparse(logical(uint8(An)));
+    clear An;
+    Ad = double(Al) - double(Aln);
+    clear Al;
+    clear Aln;
+    prob.A = Ad;
+    clear Ad;
 
 
     % Equality constraints
