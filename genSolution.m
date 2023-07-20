@@ -24,8 +24,10 @@ end
 
 disp("Problem setup completed");
 problem.p = plist;
+problem.op = op;
 problem.optab = ptab;
 problem.cloptab = cloptab;
+problem.anti_sym = antiSym;
 if solve
     disp("Solver started...");
     res = intlinprog(problem.f,problem.intcon,problem.A,problem.b,problem.Aeq,problem.beq,problem.lb,problem.ub);

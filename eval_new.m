@@ -2,11 +2,12 @@ addpath('positlist')
 
 %[a,b,e]   = genSolution(4,0,@plus)
 %[a1,b1,e] = genSolution(4,0,@times);
-%[s,p,e] = genSolution(6,2,@times);
+%[s,p,e] = genSolution(6,2,@times,true);
 %[a3,b4] = genSolution(6,2,@times)
 
-%[s,p,e] = genSolution(8,2,@times,true);
-
+[~,p,~] = genSolution(8,2,@times,true);
+%load p8_2_times.mat
+%[s,p,e] = just_solve(p);
 
 %[divs,divp,e] = genSolution(4,0,@rdivide);
 %[divs,divp] = genSolution(6,2,@rdivide);
